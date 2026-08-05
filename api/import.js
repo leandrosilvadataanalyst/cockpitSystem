@@ -316,8 +316,18 @@ module.exports = async (req, res) => {
     let totalErr = 0;
     for (const [squadId, rows] of Object.entries(bySquad)) {
       log.push(`Upsert ${squadId}: ${rows.length}`);
+      const allKeys = new Set();
+      for (const r of rows) for (const k of Object.keys(r)) allKeys.add(k);
+      const keyList = Array.from(allKeys);
+      const normalized = rows.map(r => {
+        const o = {};
+        for (const k of keyList) o[k] = k in r ? r[k] : null;
+        return o;
+      });
       try {
-        await supabaseUpsert('clientes', rows);
+        for (let i = 0; i < normalized.length; i += 50) {
+          await supabaseUpsert('clientes', normalized.slice(i, i + 50));
+        }
         totalOk += rows.length;
         log.push(`  OK`);
       } catch (e) {
