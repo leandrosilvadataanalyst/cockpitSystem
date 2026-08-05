@@ -198,10 +198,11 @@ function fetchUrl(url) {
   });
 }
 
-function supabaseUpsert(table, rows) {
+function supabaseUpsert(table, rows, onConflict) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(rows);
     const url = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
+    if (onConflict) url.searchParams.set('on_conflict', onConflict);
     const proto = SUPABASE_URL.startsWith('https') ? https : http;
     const req = proto.request(url, {
       method: 'POST',
@@ -325,14 +326,16 @@ module.exports = async (req, res) => {
         return o;
       });
       try {
-        for (let i = 0; i < normalized.length; i += 50) {
-          await supabaseUpsert('clientes', normalized.slice(i, i + 50));
+        const batchSize = 1;
+        for (let i = 0; i < normalized.length; i += batchSize) {
+          await supabaseUpsert('clientes', normalized.slice(i, i + batchSize), 'squad_id,nome');
         }
         totalOk += rows.length;
         log.push(`  OK`);
       } catch (e) {
         totalErr += rows.length;
         log.push(`  ERRO: ${e.message}`);
+        log.push(`  Primeira linha problematic: ${JSON.stringify(normalized[0]).slice(0, 500)}`);
       }
     }
 
