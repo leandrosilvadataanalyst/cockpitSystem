@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "index.js": {
+      "includeFiles": "**"
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index" }
+  ]
+}

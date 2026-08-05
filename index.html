@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cockpit System - Gestao de Squads</title>
+  <meta name="description" content="Cockpit consolidado de todas as squads: Wall Street, Legacy, Romans, Monsters SA." />
+  <link rel="icon" type="image/svg+xml" href="assets/mktlab-logo.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/login.css" />
+
+  <!-- IMPORTANTE: preencher antes de carregar o app -->
+  <script>
+    // URL automatica: localhost usa proxy Python, Vercel usa API routes
+    window.SUPABASE_URL = window.location.origin;
+    window.SUPABASE_ANON_KEY = 'nao-usado-via-proxy';
+  </script>
+</head>
+<body>
+
+  <!-- Loader -->
+  <div id="loader" role="status" aria-label="Carregando...">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- App -->
+  <div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Navegacao principal">
+      <div class="sidebar__top">
+        <div class="sidebar__brand">
+          <img class="sidebar__brand-mark" src="assets/v4companykloh_logotipo.png" alt="V4 Company" />
+          <div class="sidebar__brand-text">
+            <div class="sidebar__brand-title">COCKPIT</div>
+            <div class="sidebar__brand-sub">Gestao de Squads</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar__nav">
+        <div class="sidebar__section">
+          <div class="sidebar__section-title">Principal</div>
+          <div class="sidebar__items">
+            <a class="sidebar__item sidebar__item--active" href="#">
+              <span class="sidebar__icon" aria-hidden="true">▣</span>
+              <span>Visao Geral</span>
+              <span class="sidebar__count" id="sidebar-count-clientes">0</span>
+            </a>
+            <a class="sidebar__item" href="#">
+              <span class="sidebar__icon" aria-hidden="true">▦</span>
+              <span>Clientes</span>
+            </a>
+            <a class="sidebar__item" href="#">
+              <span class="sidebar__icon" aria-hidden="true">▤</span>
+              <span>Squads</span>
+              <span class="sidebar__count">4</span>
+            </a>
+            <a class="sidebar__item" href="#">
+              <span class="sidebar__icon" aria-hidden="true">◐</span>
+              <span>Coordenadores</span>
+            </a>
+            <a class="sidebar__item" href="#">
+              <span class="sidebar__icon" aria-hidden="true">▥</span>
+              <span>GTs</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="sidebar__section">
+          <div class="sidebar__section-title">Relatorios</div>
+          <div class="sidebar__items">
+            <a class="sidebar__item" href="#" id="sidebar-export-csv">
+              <span class="sidebar__icon" aria-hidden="true">⎙</span>
+              <span>Exportar CSV</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="sidebar__section">
+          <div class="sidebar__section-title">Sistema</div>
+          <div class="sidebar__items">
+            <a class="sidebar__item" href="#">
+              <span class="sidebar__icon" aria-hidden="true">⚙</span>
+              <span>Configuracoes</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="sidebar__footer">
+        <div class="sidebar__user">
+          <div class="sidebar__avatar" id="sidebar-avatar">A</div>
+          <div class="sidebar__user-info">
+            <div class="sidebar__user-name" id="sidebar-user-name">Admin</div>
+            <div class="sidebar__user-role">Gerente</div>
+          </div>
+        </div>
+        <button class="sidebar__collapse-btn" id="btn-toggle-sidebar" type="button" title="Recolher/Expandir menu">
+          <span class="sidebar__collapse-icon" aria-hidden="true">&#9664;</span>
+          <span class="sidebar__collapse-label">Recolher</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="app__main">
+
+    <!-- Header (top bar) -->
+    <header class="app-header">
+      <div class="app-header__search">
+        <span class="app-header__search-icon" aria-hidden="true">&#8984;</span>
+        <input type="search" id="header-search" placeholder="Buscar cliente, GT, account..." aria-label="Buscar" />
+      </div>
+      <div class="app-header__actions">
+        <div class="app-header__user">
+          <span id="user-name">Carregando...</span>
+          <span id="user-role" class="app-header__role">...</span>
+          <button id="btn-logout" class="filter-bar__btn" style="display:none">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPIs -->
+    <section class="kpis" aria-label="Indicadores">
+      <div class="kpi kpi--red">
+        <div class="kpi__label">Total de Clientes</div>
+        <div class="kpi__value" id="kpi-total">—</div>
+        <div class="kpi__sub" id="kpi-total-sub">—</div>
+      </div>
+      <div class="kpi kpi--green">
+        <div class="kpi__label">Fee Total (Mensal)</div>
+        <div class="kpi__value kpi__value--positive" id="kpi-fee">—</div>
+        <div class="kpi__sub">Soma do fee</div>
+      </div>
+      <div class="kpi kpi--green-dark">
+        <div class="kpi__label">ARR Total</div>
+        <div class="kpi__value kpi__value--accent" id="kpi-arr">—</div>
+        <div class="kpi__sub">Annual Recurring Revenue</div>
+      </div>
+      <div class="kpi kpi--red">
+        <div class="kpi__label">Distribuicao por Squad</div>
+        <div class="kpi__value" id="kpi-squads" style="font-size: var(--fs-md); line-height: var(--lh-base)">—</div>
+      </div>
+    </section>
+
+    <!-- Filtros -->
+    <nav class="filter-bar" aria-label="Filtros">
+      <div class="filter-bar__group">
+        <label class="filter-bar__label" for="filter-squad">Squad</label>
+        <select id="filter-squad"></select>
+      </div>
+      <div class="filter-bar__group">
+        <label class="filter-bar__label" for="filter-coordenador">Coordenador</label>
+        <select id="filter-coordenador"></select>
+      </div>
+      <div class="filter-bar__group">
+        <label class="filter-bar__label" for="filter-account">Account</label>
+        <select id="filter-account"></select>
+      </div>
+      <div class="filter-bar__group">
+        <label class="filter-bar__label" for="filter-gt">GT</label>
+        <select id="filter-gt"></select>
+      </div>
+      <div class="filter-bar__group">
+        <label class="filter-bar__label" for="filter-tier">Tier</label>
+        <select id="filter-tier"></select>
+      </div>
+      <div class="filter-bar__group">
+        <label class="filter-bar__label" for="filter-data-inicio">De</label>
+        <input type="date" id="filter-data-inicio" />
+      </div>
+      <div class="filter-bar__group">
+        <label class="filter-bar__label" for="filter-data-fim">Ate</label>
+        <input type="date" id="filter-data-fim" />
+      </div>
+      <div class="filter-bar__group filter-bar__search">
+        <label class="filter-bar__label" for="filter-search">Buscar</label>
+        <input type="search" id="filter-search" placeholder="Nome ou GT..." />
+      </div>
+      <div class="filter-bar__actions">
+        <button class="filter-bar__btn filter-bar__btn--green" id="btn-import-sheets" title="Atualizar dados via planilhas">Atualizar via planilhas</button>
+        <button class="filter-bar__btn" id="btn-clear-filters">Limpar</button>
+        <button class="filter-bar__btn filter-bar__btn--primary" id="btn-novo">+ Novo</button>
+      </div>
+    </nav>
+
+    <!-- Conteudo principal -->
+    <main>
+
+      <!-- Tabela -->
+      <section class="table-wrap" aria-label="Lista de clientes">
+        <div class="table-toolbar">
+          <div class="table-toolbar__title">Clientes do Cockpit</div>
+          <div class="table-toolbar__count" id="table-count">0 registros</div>
+          <div class="table-toolbar__actions">
+            <div class="dropdown" id="export-dropdown">
+              <button class="filter-bar__btn" id="btn-export" type="button">
+                <span aria-hidden="true">&#11015;</span> Exportar
+              </button>
+              <div class="dropdown__menu hidden" id="export-menu" role="menu" aria-label="Exportar">
+                <button class="dropdown__item" data-export="excel" role="menuitem" type="button">Excel (.xlsx)</button>
+                <button class="dropdown__item" data-export="csv" role="menuitem" type="button">CSV</button>
+                <button class="dropdown__item" data-export="json" role="menuitem" type="button">JSON</button>
+              </div>
+            </div>
+            <button class="filter-bar__btn" id="btn-columns" title="Escolher colunas especificas">
+              <span aria-hidden="true">[ ]</span> Colunas
+            </button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span id="pagination-info">Pagina 1 de 1</span>
+          <div class="pagination__controls">
+            <button class="pagination__btn" id="btn-prev">Anterior</button>
+            <button class="pagination__btn" id="btn-next">Proxima</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop hidden" id="modal-backdrop">
+    <div class="modal hidden" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal__header">
+        <div class="modal__title" id="modal-title">Modal</div>
+        <button class="modal__close" id="modal-close" aria-label="Fechar">×</button>
+      </div>
+      <div class="modal__body" id="modal-body"></div>
+      <div class="modal__footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Login overlay -->
+  <div class="login-overlay hidden" id="login-container" role="dialog" aria-modal="true" aria-labelledby="login-title"></div>
+
+  <!-- App -->
+  <script>
+    console.log('[index.html] script inline executado')
+
+    // Sidebar: colapsar/expandir secoes ao clicar no titulo
+    document.querySelectorAll('.sidebar__section-title').forEach((title) => {
+      title.addEventListener('click', () => {
+        title.parentElement.classList.toggle('sidebar__section--collapsed')
+      })
+    })
+
+    // Busca do header sincronizada com o filtro de busca (reusa o debounce do controller)
+    const headerSearch = document.getElementById('header-search')
+    const filterSearch = document.getElementById('filter-search')
+    if (headerSearch && filterSearch) {
+      headerSearch.addEventListener('input', () => {
+        filterSearch.value = headerSearch.value
+        filterSearch.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+    }
+  </script>
+  <!-- controller.js auto-inicia via boot() no final do arquivo -->
+  <script type="module" src="js/controller.js"></script>
+
+</body>
+</html>

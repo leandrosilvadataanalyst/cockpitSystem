@@ -1,0 +1,122 @@
+/* ═══════════════════════════════════════════════════════════
+   COCKPIT SYSTEM — Design Tokens
+   Single source of truth para cores, espacamentos, tipografia
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Cores primarias (paleta fixa) */
+  --red:        #e34948;
+  --red-dark:   #c13736;
+  --green:      #1baf7a;
+  --green-dark: #159163;
+  --black:      #111;
+  --white:      #fff;
+
+  /* Neutros */
+  --gray-900:   #0e0e0e;
+  --gray-800:   #1c1c1c;
+  --gray-700:   #252525;
+  --gray-600:   #2e2e2e;
+  --gray-500:   #3a3a3a;
+  --gray-400:   #555;
+  --gray-300:   #888;
+  --gray-200:   #aaa;
+  --gray-100:   #d4d4d4;
+  --gray-50:    #f5f5f5;
+
+  /* Backgrounds (dark mode padrao) */
+  --bg-app:        var(--gray-900);
+  --bg-card:       var(--gray-800);
+  --bg-card-hover: var(--gray-700);
+  --bg-input:      var(--gray-700);
+  --bg-row-hover:  var(--gray-700);
+
+  /* Texto */
+  --txt-primary:   var(--white);
+  --txt-secondary: var(--gray-200);
+  --txt-muted:     var(--gray-300);
+  --txt-on-red:    var(--white);
+
+  /* Bordas */
+  --border:        var(--gray-600);
+  --border-light:  var(--gray-500);
+  --border-focus:  var(--red);
+
+  /* Status (flags) — excecao da regra de cores: amarelo/laranja sao permitidos */
+  --status-critico:    var(--red);
+  --status-danger:     #f57c00;
+  --status-amarelo:    #fbc02d;
+  --status-verde:      var(--green);
+  --status-neutro:     var(--gray-300);
+  --status-preenchido: var(--gray-200);
+
+  /* Squads (cores identitarias — paleta limitada: vermelho/verde/cinza) */
+  --squad-wall-street: #c13736;
+  --squad-legacy:      #6b6b6b;
+  --squad-romans:      #3a3a3a;
+  --squad-monsters-sa: #159163;
+
+  /* Tipografia */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:   'JetBrains Mono', 'Courier New', monospace;
+  --fs-xs:       11px;
+  --fs-sm:       12px;
+  --fs-base:     14px;
+  --fs-md:       16px;
+  --fs-lg:       20px;
+  --fs-xl:       28px;
+  --fs-xxl:      36px;
+  --fw-normal:   400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+  --lh-tight:    1.2;
+  --lh-base:     1.5;
+
+  /* Espacamentos (grid de 8px) */
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3:  12px;
+  --s-4:  16px;
+  --s-5:  24px;
+  --s-6:  32px;
+  --s-7:  48px;
+  --s-8:  64px;
+
+  /* Bordas arredondadas */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-pill: 999px;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+
+  /* Transicoes */
+  --t-fast:  120ms ease;
+  --t-base:  200ms ease;
+  --t-slow:  300ms ease;
+
+  /* Layout */
+  --header-h: 64px;
+  --filter-h: 56px;
+  --max-w:    1600px;
+}
+
+/* Light mode override (futuro) */
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] {
+    --bg-app:        #f5f5f5;
+    --bg-card:       #ffffff;
+    --bg-card-hover: #f9f9f9;
+    --bg-input:      #ffffff;
+    --bg-row-hover:  #f0f0f0;
+    --txt-primary:   #111;
+    --txt-secondary: #444;
+    --txt-muted:     #777;
+    --border:        #e0e0e0;
+    --border-light:  #d0d0d0;
+  }
+}
