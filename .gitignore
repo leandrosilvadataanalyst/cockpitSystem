@@ -1,0 +1,4 @@
+.env
+/.opencode
+/local
+*.err
