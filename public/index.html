@@ -15,12 +15,8 @@
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/login.css" />
 
-  <!-- IMPORTANTE: preencher antes de carregar o app -->
-  <script>
-    // URL automatica: localhost usa proxy Python, Vercel usa API routes
-    window.SUPABASE_URL = window.location.origin;
-    window.SUPABASE_ANON_KEY = 'nao-usado-via-proxy';
-  </script>
+  <!-- IMPORTANTE: carregar antes do app -->
+  <script src="/api/config.js"></script>
 </head>
 <body>
 
