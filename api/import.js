@@ -13,6 +13,7 @@ const SQUADS = [
 const GID = 330387776;
 
 const COL_MAP = {
+  'id': 'id_externo',
   'name': 'cliente',
   'Nome do Projeto': 'cliente',
   'Churn realizado': 'churn_realizado',
@@ -103,7 +104,8 @@ const COL_MAP = {
   'Drive do Cliente': 'drive_cliente',
 };
 
-const MONEY_COLS = new Set(['fee', 'arr', 'total_media_plan', 'meta_media_plan', 'google_media_plan', 'saldo_conta_meta', 'saldo_conta_google', 'verba_investida']);
+const MONEY_COLS = new Set(['fee', 'arr', 'total_media_plan', 'meta_media_plan', 'google_media_plan', 'saldo_conta_meta', 'saldo_conta_google', 'verba_investida', 'gmv_mensal']);
+const NUMERIC_COLS = new Set(['health_medio', 'pontuacao_ponderada', 'nota_mql', 'nota_atrasos', 'nota_qualidade', 'nota_relacionamento', 'nota_resultado', 'csat_geral', 'csat_atendimento', 'csat_prazo', 'csat_resultados', 'csat_copy', 'csat_design', 'csat_campanhas', 'nps']);
 const DATE_COLS = new Set(['data_atualizacao', 'data_inicio_contrato', 'data_vencimento_contrato', 'start_plano', 'deadline_plano', 'last_csat_matriz', 'data_ultima_auditoria']);
 
 const DB_COL_MAP = {
@@ -116,14 +118,16 @@ const BOOL_COLS = new Set(['entregas_prazo', 'entregas_qualidade', 'relacionamen
 function clean(s) {
   if (s === null || s === undefined) return null;
   s = String(s).trim();
-  if (!s || ['nan', 'none', 'null', '#ref!'].includes(s.toLowerCase())) return null;
+  if (!s) return null;
+  const lower = s.toLowerCase();
+  if (['nan', 'none', 'null', '#ref!', '-', '--', 'n/a', '#n/a', 'sem data'].includes(lower)) return null;
   return s;
 }
 
 function parseBrl(s) {
   if (!s) return null;
   s = String(s).trim();
-  if (!s) return null;
+  if (!s || s === '-' || s === '--') return null;
   s = s.replace(/[R$\s]/g, '');
   if (!/^[\d.,]+$/.test(s)) return null;
   s = s.replace(/\.(?=\d{3})/g, '').replace(',', '.');
@@ -134,9 +138,16 @@ function parseBrl(s) {
 function parseDateBr(s) {
   if (!s) return null;
   s = String(s).trim();
+  if (!s || s === '-' || s === '--') return null;
   const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
-  return s;
+  if (!m) return null;
+  const day = parseInt(m[1], 10);
+  const month = parseInt(m[2], 10);
+  const year = parseInt(m[3], 10);
+  if (month < 1 || month > 12) return null;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  if (day < 1 || day > daysInMonth) return null;
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 function parseBool(v) {
@@ -240,6 +251,9 @@ function rowToPayload(row, squadId) {
     const v = clean(row[sheetCol]);
     if (v === null) continue;
     if (MONEY_COLS.has(dbCol)) {
+      const n = parseBrl(v);
+      if (n !== null) payload[dbCol] = n;
+    } else if (NUMERIC_COLS.has(dbCol)) {
       const n = parseBrl(v);
       if (n !== null) payload[dbCol] = n;
     } else if (DATE_COLS.has(dbCol)) {
