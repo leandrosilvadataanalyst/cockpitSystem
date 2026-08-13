@@ -2,3 +2,4 @@
 /.opencode
 /local
 *.err
+__pycache__/

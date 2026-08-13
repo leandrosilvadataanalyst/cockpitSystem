@@ -115,6 +115,13 @@ const DB_COL_MAP = {
 };
 const BOOL_COLS = new Set(['entregas_prazo', 'entregas_qualidade', 'relacionamento']);
 
+// Override de mapeamento por squad.
+// wall-street atualizou a planilha: nao usa mais 'Flag calculada' no padrao
+// antigo. Para ela, a coluna 'Flag calculada' representa a Flag MEDIA.
+const SQUAD_COL_OVERRIDES = {
+  'wall-street': { 'Flag calculada': 'flag_media' },
+};
+
 function clean(s) {
   if (s === null || s === undefined) return null;
   s = String(s).trim();
@@ -247,19 +254,21 @@ function rowToPayload(row, squadId) {
   if (!nome) return null;
   payload.cliente = nome;
 
+  const overrides = SQUAD_COL_OVERRIDES[squadId] || {};
   for (const [sheetCol, dbCol] of Object.entries(COL_MAP)) {
     const v = clean(row[sheetCol]);
     if (v === null) continue;
-    if (MONEY_COLS.has(dbCol)) {
+    const target = overrides[sheetCol] || dbCol;
+    if (MONEY_COLS.has(target)) {
       const n = parseBrl(v);
-      if (n !== null) payload[dbCol] = n;
-    } else if (NUMERIC_COLS.has(dbCol)) {
+      if (n !== null) payload[target] = n;
+    } else if (NUMERIC_COLS.has(target)) {
       const n = parseBrl(v);
-      if (n !== null) payload[dbCol] = n;
-    } else if (DATE_COLS.has(dbCol)) {
-      payload[dbCol] = parseDateBr(v);
+      if (n !== null) payload[target] = n;
+    } else if (DATE_COLS.has(target)) {
+      payload[target] = parseDateBr(v);
     } else {
-      payload[dbCol] = v;
+      payload[target] = v;
     }
   }
 

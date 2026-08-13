@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatorio de Flags por Squad - Cockpit System</title>
+  <meta name="description" content="Relatorio consolidado de flags (calculada e media) por squad." />
+  <link rel="icon" type="image/svg+xml" href="assets/mktlab-logo.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/login.css" />
+
+  <!-- IMPORTANTE: carregar antes do app -->
+  <script src="/api/config.js"></script>
+
+  <style>
+    .flags-page {
+      padding: var(--s-6);
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .flags-page__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--s-5);
+    }
+    .flags-page__title {
+      font-size: var(--fs-lg);
+      font-weight: var(--fw-semibold);
+    }
+    .flags-grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-5);
+    }
+    .flags-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+    .flags-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--red) 0%, var(--red-dark) 50%, var(--red) 100%);
+      z-index: 5;
+    }
+    .flags-card__title {
+      font-size: var(--fs-md);
+      font-weight: var(--fw-semibold);
+      padding: var(--s-4) var(--s-5);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: var(--s-2);
+    }
+    .flags-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: var(--fw-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--txt-muted);
+      border: 1px solid var(--gray-500);
+      border-radius: var(--r-pill);
+      padding: 2px 8px;
+    }
+    .flags-badge--legado {
+      color: var(--status-amarelo);
+      border-color: rgba(251, 192, 45, 0.5);
+      background: rgba(251, 192, 45, 0.08);
+    }
+    .flags-note {
+      margin-top: var(--s-3);
+      padding: var(--s-3) var(--s-4);
+      border-left: 3px solid var(--status-amarelo);
+      background: rgba(251, 192, 45, 0.06);
+      color: var(--txt-secondary);
+      font-size: var(--fs-sm);
+      line-height: var(--lh-base);
+    }
+    .flags-scroll {
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--red) var(--gray-700);
+    }
+    .flags-table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: var(--fs-sm);
+      table-layout: fixed;
+    }
+    .flags-table th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      text-align: left;
+      padding: var(--s-3) var(--s-4);
+      font-size: 11px;
+      font-weight: var(--fw-bold);
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+      background: var(--bg-card);
+    }
+    .flags-table td {
+      padding: var(--s-3) var(--s-4);
+      border-bottom: 1px solid var(--border);
+      color: var(--txt-primary);
+      white-space: nowrap;
+      font-size: var(--fs-sm);
+    }
+    .flags-table tbody tr {
+      transition: background var(--t-fast);
+    }
+    .flags-table tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .flags-table tbody tr:hover {
+      background: var(--bg-row-hover);
+    }
+    .flags-table tfoot td {
+      font-weight: var(--fw-semibold);
+      border-top: 2px solid var(--border);
+      background: var(--gray-700);
+      color: var(--txt-primary);
+    }
+    .flags-table tfoot .flags-summary td {
+      font-weight: var(--fw-normal);
+      border-top: 1px dashed var(--gray-500);
+      background: transparent;
+    }
+    .flags-table tfoot .flags-summary--ativos td:first-child {
+      color: var(--green);
+    }
+    .flags-table tfoot .flags-summary--churn td:first-child {
+      color: var(--red);
+    }
+    .flags-table tfoot .flags-summary .flags-sticky {
+      background: var(--gray-800);
+    }
+    .flags-table tfoot .flags-summary--ativos .flags-sticky {
+      background: rgba(27, 175, 122, 0.08);
+    }
+    .flags-table tfoot .flags-summary--churn .flags-sticky {
+      background: rgba(227, 73, 72, 0.08);
+    }
+    .flags-sticky {
+      position: sticky;
+      left: 0;
+      background: inherit;
+      z-index: 2;
+    }
+    .flags-table th.flags-sticky {
+      z-index: 4;
+    }
+    .flags-table tfoot .flags-sticky {
+      background: var(--gray-700);
+    }
+    .flags-squad {
+      font-weight: var(--fw-semibold);
+      text-transform: capitalize;
+    }
+    .flags-cell {
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-mono);
+    }
+    .flags-sub {
+      color: var(--txt-muted);
+      font-size: 10px;
+      font-family: var(--font-family);
+    }
+    .flags-total-cell {
+      text-align: right;
+    }
+    .flags-col {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loader -->
+  <div id="loader" role="status" aria-label="Carregando...">
+    <div class="spinner"></div>
+  </div>
+
+  <main class="flags-page">
+    <div class="flags-page__header">
+      <h1 class="flags-page__title">Relatorio de Flags por Squad</h1>
+      <button class="filter-bar__btn" id="btn-voltar" type="button">&larr; Voltar</button>
+    </div>
+
+    <div id="flags-report-container" class="flags-grid">
+      <div class="empty" style="grid-column: 1 / -1;">
+        <div class="empty__icon">&#8987;</div>
+        <div class="empty__title">Carregando dados...</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Botao voltar para o dashboard
+    document.getElementById('btn-voltar')?.addEventListener('click', () => {
+      window.location.href = 'index.html'
+    })
+  </script>
+
+  <!-- App logic -->
+  <script type="module" src="js/report_flags.js"></script>
+</body>
+</html>
