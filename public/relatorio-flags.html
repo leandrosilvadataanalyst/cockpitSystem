@@ -21,7 +21,7 @@
   <style>
     .flags-page {
       padding: var(--s-6);
-      max-width: 1400px;
+      max-width: 1680px;
       margin: 0 auto;
     }
     .flags-page__header {
@@ -37,7 +37,64 @@
     .flags-grid {
       display: flex;
       flex-direction: column;
-      gap: var(--s-5);
+      gap: var(--s-6);
+    }
+    .flags-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: var(--s-3);
+      padding: var(--s-3) var(--s-4);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      margin-bottom: var(--s-5);
+    }
+    .flags-toolbar__group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .flags-toolbar__label {
+      font-size: 11px;
+      font-weight: var(--fw-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--txt-muted);
+    }
+    .flags-toolbar select {
+      min-width: 220px;
+      padding: var(--s-2) var(--s-3);
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--txt-primary);
+      font-size: var(--fs-sm);
+      font-family: var(--font-family);
+    }
+    .flags-toolbar__export {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--s-2);
+      margin-left: auto;
+    }
+    .flags-export-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: var(--s-2) var(--s-4);
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--txt-primary);
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-semibold);
+      cursor: pointer;
+      font-family: var(--font-family);
+    }
+    .flags-export-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
     }
     .flags-card {
       background: var(--bg-card);
@@ -58,12 +115,17 @@
       z-index: 5;
     }
     .flags-card__title {
-      font-size: var(--fs-md);
+      font-size: var(--fs-lg);
       font-weight: var(--fw-semibold);
-      padding: var(--s-4) var(--s-5);
+      padding: var(--s-5) var(--s-6);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
+      gap: var(--s-2);
+    }
+    .flags-card__export {
+      margin-left: auto;
+      display: flex;
       gap: var(--s-2);
     }
     .flags-badge {
@@ -100,10 +162,10 @@
     }
     .flags-table {
       width: 100%;
-      min-width: 900px;
+      min-width: 1280px;
       border-collapse: separate;
       border-spacing: 0;
-      font-size: var(--fs-sm);
+      font-size: var(--fs-md);
       table-layout: fixed;
     }
     .flags-table th {
@@ -111,22 +173,22 @@
       top: 0;
       z-index: 3;
       text-align: left;
-      padding: var(--s-3) var(--s-4);
-      font-size: 11px;
+      padding: var(--s-4) var(--s-5);
+      font-size: 13px;
       font-weight: var(--fw-bold);
       color: var(--red);
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.4px;
       border-bottom: 2px solid var(--border);
       white-space: nowrap;
       background: var(--bg-card);
     }
     .flags-table td {
-      padding: var(--s-3) var(--s-4);
+      padding: var(--s-4) var(--s-5);
       border-bottom: 1px solid var(--border);
       color: var(--txt-primary);
       white-space: nowrap;
-      font-size: var(--fs-sm);
+      font-size: var(--fs-md);
     }
     .flags-table tbody tr {
       transition: background var(--t-fast);
@@ -143,25 +205,29 @@
       background: var(--gray-700);
       color: var(--txt-primary);
     }
-    .flags-table tfoot .flags-summary td {
-      font-weight: var(--fw-normal);
-      border-top: 1px dashed var(--gray-500);
-      background: transparent;
+    .flags-table th.flags-ativos {
+      background: rgba(27, 175, 122, 0.14);
+      border-bottom-color: var(--green);
     }
-    .flags-table tfoot .flags-summary--ativos td:first-child {
+    .flags-table th.flags-churn {
+      background: rgba(227, 73, 72, 0.14);
+      border-bottom-color: var(--red);
+    }
+    .flags-table td.flags-ativos {
+      background: rgba(27, 175, 122, 0.07);
       color: var(--green);
+      font-weight: var(--fw-semibold);
     }
-    .flags-table tfoot .flags-summary--churn td:first-child {
+    .flags-table td.flags-churn {
+      background: rgba(227, 73, 72, 0.07);
       color: var(--red);
+      font-weight: var(--fw-semibold);
     }
-    .flags-table tfoot .flags-summary .flags-sticky {
-      background: var(--gray-800);
+    .flags-table tfoot td.flags-ativos {
+      background: rgba(27, 175, 122, 0.16);
     }
-    .flags-table tfoot .flags-summary--ativos .flags-sticky {
-      background: rgba(27, 175, 122, 0.08);
-    }
-    .flags-table tfoot .flags-summary--churn .flags-sticky {
-      background: rgba(227, 73, 72, 0.08);
+    .flags-table tfoot td.flags-churn {
+      background: rgba(227, 73, 72, 0.16);
     }
     .flags-sticky {
       position: sticky;
@@ -185,7 +251,7 @@
     }
     .flags-sub {
       color: var(--txt-muted);
-      font-size: 10px;
+      font-size: 12px;
       font-family: var(--font-family);
     }
     .flags-total-cell {
@@ -207,6 +273,25 @@
     <div class="flags-page__header">
       <h1 class="flags-page__title">Relatorio de Flags por Squad</h1>
       <button class="filter-bar__btn" id="btn-voltar" type="button">&larr; Voltar</button>
+    </div>
+
+    <div class="flags-toolbar" id="flags-toolbar">
+      <div class="flags-toolbar__group">
+        <label class="flags-toolbar__label" for="filtro-squad">Squad</label>
+        <select id="filtro-squad">
+          <option value="">Todas as squads</option>
+        </select>
+      </div>
+      <div class="flags-toolbar__group">
+        <label class="flags-toolbar__label" for="filtro-flag">Flag</label>
+        <select id="filtro-flag">
+          <option value="">Todas as flags</option>
+        </select>
+      </div>
+      <div class="flags-toolbar__export">
+        <button class="flags-export-btn" id="btn-export-csv" type="button">Baixar CSV</button>
+        <button class="flags-export-btn" id="btn-export-excel" type="button">Baixar Excel</button>
+      </div>
     </div>
 
     <div id="flags-report-container" class="flags-grid">
