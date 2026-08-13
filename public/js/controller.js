@@ -117,6 +117,10 @@ function bindFilters() {
     setFilter('tier', e.target.value)
     applyFilters(); render()
   })
+  $('#filter-churn').addEventListener('change', (e) => {
+    setFilter('churn', e.target.value)
+    applyFilters(); render()
+  })
   $('#filter-data-inicio').addEventListener('change', (e) => {
     setFilter('data_inicio', e.target.value)
     applyFilters(); render()

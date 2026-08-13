@@ -248,7 +248,7 @@ function supabaseUpsert(table, rows, onConflict) {
   });
 }
 
-function rowToPayload(row, squadId) {
+function rowToPayload(row, squadId, warnings) {
   const payload = { squad_id: squadId };
   const nome = clean(row['name'] || row['Nome do Projeto']);
   if (!nome) return null;
@@ -262,9 +262,11 @@ function rowToPayload(row, squadId) {
     if (MONEY_COLS.has(target)) {
       const n = parseBrl(v);
       if (n !== null) payload[target] = n;
+      else if (warnings) warnings.push(`${nome}: '${sheetCol}' = '${v}' nao parseavel (moeda)`);
     } else if (NUMERIC_COLS.has(target)) {
       const n = parseBrl(v);
       if (n !== null) payload[target] = n;
+      else if (warnings) warnings.push(`${nome}: '${sheetCol}' = '${v}' nao parseavel (numerico)`);
     } else if (DATE_COLS.has(target)) {
       payload[target] = parseDateBr(v);
     } else {
@@ -282,10 +284,20 @@ function rowToPayload(row, squadId) {
     }
   }
   if (!out.nome) throw new Error('cliente sem nome');
+
+  // Supervisao: valida as 5 notas (0-5). Fora do intervalo vira aviso.
+  if (warnings) {
+    for (const n of ['nota_mql', 'nota_atrasos', 'nota_qualidade', 'nota_relacionamento', 'nota_resultado']) {
+      const val = out[n];
+      if (val != null && (val < 0 || val > 5)) {
+        warnings.push(`${nome}: ${n} = ${val} fora do intervalo 0-5`);
+      }
+    }
+  }
   return out;
 }
 
-async function fetchSquad(squad) {
+async function fetchSquad(squad, warnings) {
   const url = `https://docs.google.com/spreadsheets/d/${squad.sheetId}/export?format=csv&gid=${GID}`;
   const csv = await fetchUrl(url);
   const rows = parseCSV(csv);
@@ -297,11 +309,55 @@ async function fetchSquad(squad) {
   const payloads = [];
   for (const r of normalized) {
     try {
-      const p = rowToPayload(r, squad.id);
+      const p = rowToPayload(r, squad.id, warnings);
       if (p) payloads.push(p);
-    } catch (_) {}
+    } catch (e) {
+      warnings.push(`${squad.id}: linha ignorada (${e.message})`);
+    }
   }
   return payloads;
+}
+
+// Verifica se o banco espelha as planilhas: total por squad e notas preenchidas.
+async function verifyMirror() {
+  const body = await supabaseGet('/clientes?select=squad_id,nota_mql,nota_atrasos,nota_qualidade,nota_relacionamento,nota_resultado&limit=1000');
+  const report = {};
+  for (const c of body || []) {
+    const s = report[c.squad_id] = report[c.squad_id] || { banco: 0, comNota: 0 };
+    s.banco += 1;
+    if (c.nota_mql != null || c.nota_atrasos != null || c.nota_qualidade != null || c.nota_relacionamento != null || c.nota_resultado != null) {
+      s.comNota += 1;
+    }
+  }
+  return report;
+}
+
+function supabaseGet(path) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(`${SUPABASE_URL}/rest/v1${path}`);
+    const proto = SUPABASE_URL.startsWith('https') ? https : http;
+    const req = proto.request(url, {
+      method: 'GET',
+      headers: {
+        apikey: SERVICE_KEY,
+        Authorization: `Bearer ${SERVICE_KEY}`,
+      },
+      timeout: 30000,
+    }, (res) => {
+      const chunks = [];
+      res.on('data', d => chunks.push(d));
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf-8'))); }
+          catch (e) { reject(new Error('Resposta invalida do Supabase')); }
+        } else {
+          reject(new Error(`Supabase GET ${res.statusCode}: ${Buffer.concat(chunks).toString('utf-8')}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
 }
 
 module.exports = async (req, res) => {
@@ -313,16 +369,18 @@ module.exports = async (req, res) => {
   }
 
   const log = [];
+  const warnings = [];
   try {
     const all = [];
     for (const squad of SQUADS) {
       log.push(`Buscando ${squad.id}...`);
       try {
-        const rows = await fetchSquad(squad);
+        const rows = await fetchSquad(squad, warnings);
         log.push(`  ${squad.id}: ${rows.length} clientes`);
         all.push(...rows);
       } catch (e) {
         log.push(`  ${squad.id} ERRO: ${e.message}`);
+        warnings.push(`${squad.id} ERRO ao buscar planilha: ${e.message}`);
       }
     }
 
@@ -362,13 +420,25 @@ module.exports = async (req, res) => {
       }
     }
 
+    // Supervisao: verifica se o banco espelha as planilhas apos o import.
+    let mirror = null;
+    try {
+      mirror = await verifyMirror();
+    } catch (e) {
+      warnings.push(`Falha na verificacao do espelho: ${e.message}`);
+    }
+
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.statusCode = totalErr === 0 ? 200 : 500;
     res.end(JSON.stringify({
       ok: totalErr === 0,
+      source: 'manual',
       output: log.join('\n'),
       imported: totalOk,
       errors: totalErr,
+      warnings: warnings.slice(0, 100),
+      warningsTotal: warnings.length,
+      mirror,
     }));
   } catch (e) {
     res.statusCode = 500;

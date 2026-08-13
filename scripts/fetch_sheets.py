@@ -131,11 +131,11 @@ COL_MAP = {
 
 
 def clean(s):
-    """String vazia -> None."""
+    """String vazia ou placeholder -> None."""
     if s is None:
         return None
     s = str(s).strip()
-    if not s or s.lower() in ('nan', 'none', 'null', '#ref!'):
+    if not s or s.lower() in ('nan', 'none', 'null', '#ref!', '-', '--', 'n/a', '#n/a', 'sem data'):
         return None
     return s
 
@@ -145,7 +145,7 @@ def parse_brl(s):
     if not s:
         return None
     s = str(s).strip()
-    if not s:
+    if not s or s in ('-', '--'):
         return None
     # Remove R$, espacos e substitui , por .
     s = re.sub(r'[R$\s]', '', s)
@@ -161,20 +161,34 @@ def parse_brl(s):
 
 
 def parse_date_br(s):
-    """dd/MM/yyyy -> yyyy-MM-dd."""
+    """dd/MM/yyyy -> yyyy-MM-dd. Invalido -> None."""
     if not s:
         return None
     s = str(s).strip()
+    if not s or s in ('-', '--'):
+        return None
     m = re.match(r'^(\d{1,2})/(\d{1,2})/(\d{4})$', s)
     if m:
+        day, month, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if month < 1 or month > 12:
+            return None
+        import calendar
+        if day < 1 or day > calendar.monthrange(year, month)[1]:
+            return None
         return f'{m.group(3)}-{m.group(2).zfill(2)}-{m.group(1).zfill(2)}'
-    return s
+    return None
 
 
 # Colunas que sao monetarias e precisam de parse_brl
 MONEY_COLS = {
     'fee', 'arr', 'total_media_plan', 'meta_media_plan', 'google_media_plan',
     'saldo_conta_meta', 'saldo_conta_google', 'verba_investida'
+}
+NUMERIC_COLS = {
+    'health_medio', 'pontuacao_ponderada', 'nota_mql', 'nota_atrasos',
+    'nota_qualidade', 'nota_relacionamento', 'nota_resultado',
+    'csat_atendimento', 'csat_prazo', 'csat_resultados', 'csat_copy',
+    'csat_design', 'csat_campanhas', 'nps'
 }
 DATE_COLS = {
     'data_atualizacao', 'data_inicio_contrato', 'data_vencimento_contrato',
@@ -221,6 +235,10 @@ def fetch_all():
                         if parsed is not None:
                             payload[db_col] = parsed
                         # Se parse falhou, mantem original
+                    elif db_col in NUMERIC_COLS:
+                        parsed = parse_brl(v)
+                        if parsed is not None:
+                            payload[db_col] = parsed
                     elif db_col in DATE_COLS:
                         payload[db_col] = parse_date_br(v)
                     else:

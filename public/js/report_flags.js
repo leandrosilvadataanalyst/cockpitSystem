@@ -6,6 +6,7 @@
  * e exportacao em CSV e Excel.
  */
 import { DB } from './supabase.js'
+import { renderDashboard, destroyDashboard } from './report_dashboard.js?v=7'
 
 const $ = (sel) => document.querySelector(sel)
 
@@ -40,38 +41,38 @@ const fmtPct = (n, total) => {
   return (n / total * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%'
 }
 
-const FLAG_ORDER = ['VERMELHO', 'AMARELO', 'VERDE', 'PREENCHIDO', 'OUTROS', 'SEM FLAG']
+const FLAG_ORDER = ['VERMELHO', 'AMARELO', 'VERDE', 'SEM FLAG']
+const FLAG_LABELS = {
+  'VERMELHO': 'Danger (Vermelho)',
+  'AMARELO': 'Care (Amarelo)',
+  'VERDE': 'Safe (Verde)',
+  'SEM FLAG': 'Sem Flag',
+}
+const flagLabel = (k) => FLAG_LABELS[k] || k
 
 function buildTable(clientes, getFlag) {
-  const squads = squadsList.filter(s => clientes.some(c => c.squad_id === s))
+  const ativos = clientes.filter(c => !isChurn(c))
+  const squads = squadsList.filter(s => ativos.some(c => c.squad_id === s))
 
   const rows = squads.map(squad => {
     const counts = {}
     for (const k of FLAG_ORDER) counts[k] = 0
-    let ativos = 0
-    let churn = 0
-    for (const c of clientes) {
+    for (const c of ativos) {
       if (c.squad_id !== squad) continue
       counts[normalizeFlag(getFlag(c))] += 1
-      if (isChurn(c)) churn += 1
-      else ativos += 1
     }
     const total = Object.values(counts).reduce((a, b) => a + b, 0)
-    return { squad, counts, total, ativos, churn }
+    return { squad, counts, total }
   })
 
   const totals = {}
   for (const k of FLAG_ORDER) totals[k] = 0
-  let totalAtivos = 0
-  let totalChurn = 0
   for (const r of rows) {
     for (const k of FLAG_ORDER) totals[k] += r.counts[k]
-    totalAtivos += r.ativos
-    totalChurn += r.churn
   }
   totals.total = Object.values(totals).reduce((a, b) => a + b, 0)
 
-  return { rows, totals, totalAtivos, totalChurn, flagKinds: FLAG_ORDER }
+  return { rows, totals, flagKinds: FLAG_ORDER }
 }
 
 function getFiltered() {
@@ -101,38 +102,47 @@ function render() {
       exportKey: 'media',
     })}
   `
+
+  renderDashboardSafe()
+}
+
+function renderDashboardSafe() {
+  const dashEl = $('#flags-dashboard-container')
+  if (!dashEl) return
+  try {
+    destroyDashboard()
+    renderDashboard(getFiltered(), dashEl)
+  } catch (err) {
+    console.error('[dashboard] erro:', err)
+    dashEl.innerHTML = `
+      <div class="empty">
+        <div class="empty__icon">&#9888;</div>
+        <div class="empty__title">Erro no dashboard de notas</div>
+        <div class="empty__sub">${esc(err.message)}</div>
+      </div>`
+  }
 }
 
 function renderCard({ title, badge, note, table, exportKey }) {
   const head = `
     <tr>
       <th class="flags-sticky">Squad</th>
-      ${table.flagKinds.map(k => `<th class="flags-col">${esc(k)}</th>`).join('')}
-      <th class="flags-col flags-ativos" title="Clientes Ativos (churn: N&atilde;o)">Ativos</th>
-      <th class="flags-col flags-churn" title="Clientes Churn (churn: Sim)">Churn</th>
-      <th class="flags-total">Total</th>
-      <th class="flags-total">%</th>
+      ${table.flagKinds.map(k => `<th class="flags-col">${esc(flagLabel(k))}</th>`).join('')}
+      <th class="flags-total">Total Ativos</th>
     </tr>`
   const body = table.rows.map(r => {
-    const pct = r.total ? (r.total / table.totals.total * 100) : 0
     return `
     <tr>
       <td class="flags-sticky flags-squad">${esc(r.squad)}</td>
       ${table.flagKinds.map(k => `<td class="flags-col flags-cell">${r.counts[k]} <span class="flags-sub">${fmtPct(r.counts[k], r.total)}</span></td>`).join('')}
-      <td class="flags-col flags-cell flags-ativos">${r.ativos}</td>
-      <td class="flags-col flags-cell flags-churn">${r.churn}</td>
-      <td class="flags-total flags-cell flags-total-cell">${r.total}</td>
-      <td class="flags-total flags-cell flags-total-cell">${pct.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</td>
+      <td class="flags-total flags-cell flags-total-cell flags-ativos">${r.total}</td>
     </tr>`
   }).join('')
   const foot = `
     <tr>
       <td class="flags-sticky">Total Geral</td>
       ${table.flagKinds.map(k => `<td class="flags-col flags-cell">${table.totals[k]} <span class="flags-sub">${fmtPct(table.totals[k], table.totals.total)}</span></td>`).join('')}
-      <td class="flags-col flags-cell flags-ativos">${table.totalAtivos}</td>
-      <td class="flags-col flags-cell flags-churn">${table.totalChurn}</td>
-      <td class="flags-total flags-cell flags-total-cell">${table.totals.total}</td>
-      <td class="flags-total flags-cell flags-total-cell">100%</td>
+      <td class="flags-total flags-cell flags-total-cell flags-ativos">${table.totals.total}</td>
     </tr>`
   return `
     <div class="flags-card">
@@ -155,25 +165,18 @@ function renderCard({ title, badge, note, table, exportKey }) {
 
 function tableToMatrix(table) {
   const rows = []
-  rows.push(['Squad', ...table.flagKinds, 'Ativos', 'Churn', 'Total', '%'])
+  rows.push(['Squad', ...table.flagKinds.map(flagLabel), 'Total Ativos'])
   for (const r of table.rows) {
-    const pct = r.total ? (r.total / table.totals.total * 100) : 0
     rows.push([
       r.squad,
-      ...table.flagKinds.map(k => r.counts[k]),
-      r.ativos,
-      r.churn,
+      ...table.flagKinds.map(k => `${r.counts[k]} (${fmtPct(r.counts[k], r.total)})`),
       r.total,
-      pct.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%',
     ])
   }
   rows.push([
     'Total Geral',
-    ...table.flagKinds.map(k => table.totals[k]),
-    table.totalAtivos,
-    table.totalChurn,
+    ...table.flagKinds.map(k => `${table.totals[k]} (${fmtPct(table.totals[k], table.totals.total)})`),
     table.totals.total,
-    '100%',
   ])
   return rows
 }
@@ -269,7 +272,7 @@ function populateFilters() {
   FLAG_ORDER.forEach(f => {
     const opt = document.createElement('option')
     opt.value = f
-    opt.textContent = f
+    opt.textContent = flagLabel(f)
     flagSel.appendChild(opt)
   })
 }

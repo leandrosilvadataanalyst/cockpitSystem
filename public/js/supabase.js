@@ -75,7 +75,6 @@ export const DB = {
     if (filters.account) params.append('account', `eq.${filters.account}`)
     if (filters.gt) params.append('gt', `eq.${filters.gt}`)
     if (filters.tier) params.append('tier', `eq.${filters.tier}`)
-    if (filters.churn) params.append('churn_realizado', `eq.${filters.churn}`)
     if (filters.search) params.append('nome', `ilike.*${filters.search}*`)
     if (filters.data_inicio) params.append('data_atualizacao', `gte.${filters.data_inicio}`)
     if (filters.data_fim) params.append('data_atualizacao', `lte.${filters.data_fim}`)

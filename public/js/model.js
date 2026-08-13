@@ -15,7 +15,7 @@ export const state = {
     account: null,
     gt: null,
     tier: null,
-    churn: null,
+    churn: 'Nao',
     data_inicio: null,
     data_fim: null,
     search: '',
@@ -72,7 +72,13 @@ export function applyFilters() {
   if (f.account) r = r.filter(c => c.account === f.account)
   if (f.gt) r = r.filter(c => c.gt === f.gt)
   if (f.tier) r = r.filter(c => c.tier === f.tier)
-  if (f.churn) r = r.filter(c => c.churn_realizado === f.churn)
+  if (f.churn) {
+    const isChurned = (c) => {
+      const v = String(c.churn_realizado ?? '').trim().toLowerCase()
+      return v === 'sim' || v === 'true' || v === '1' || v === 'yes'
+    }
+    r = r.filter(c => f.churn === 'Sim' ? isChurned(c) : !isChurned(c))
+  }
   if (f.data_inicio) r = r.filter(c => c.data_atualizacao && c.data_atualizacao >= f.data_inicio)
   if (f.data_fim) r = r.filter(c => c.data_atualizacao && c.data_atualizacao <= f.data_fim)
   if (f.search) {
@@ -136,7 +142,7 @@ export function clearFilters() {
     account: null,
     gt: null,
     tier: null,
-    churn: null,
+    churn: 'Nao',
     data_inicio: null,
     data_fim: null,
     search: '',

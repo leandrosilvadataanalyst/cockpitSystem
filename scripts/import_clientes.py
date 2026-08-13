@@ -147,11 +147,11 @@ def parse_bool(v):
 
 
 def clean(v):
-    """Limpa string vazia -> None."""
+    """Limpa string vazia/placeholder -> None."""
     if v is None:
         return None
     s = str(v).strip()
-    if not s or s.lower() in ("nan", "none", "null", "#ref!"):
+    if not s or s.lower() in ('nan', 'none', 'null', '#ref!', '-', '--', 'n/a', '#n/a', 'sem data'):
         return None
     return s
 

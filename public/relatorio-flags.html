@@ -260,6 +260,221 @@
     .flags-col {
       text-align: center;
     }
+
+    /* ---- Dashboard de notas ---- */
+    .flags-dashboard {
+      margin-top: var(--s-7);
+    }
+    .dash-section {
+      margin-bottom: var(--s-6);
+    }
+    .dash-section__title {
+      font-size: var(--fs-md);
+      font-weight: var(--fw-semibold);
+      margin-bottom: var(--s-4);
+      color: var(--txt-primary);
+    }
+    .dash-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--s-4);
+    }
+    .dash-kpi {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--kpi-line, var(--red));
+      border-radius: var(--r-md);
+      padding: var(--s-4);
+      box-shadow: var(--shadow-sm);
+    }
+    .dash-kpi__label {
+      font-size: var(--fs-xs);
+      font-weight: var(--fw-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--txt-muted);
+      margin-bottom: var(--s-2);
+    }
+    .dash-kpi__value {
+      font-size: var(--fs-xl);
+      font-weight: var(--fw-bold);
+      font-family: var(--font-mono);
+      line-height: 1.1;
+    }
+    .dash-kpi__sub {
+      font-size: var(--fs-xs);
+      color: var(--txt-secondary);
+      margin-top: var(--s-1);
+    }
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: var(--s-5);
+      margin-bottom: var(--s-6);
+    }
+    .dash-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: var(--s-4);
+      box-shadow: var(--shadow-md);
+    }
+    .dash-chart {
+      position: relative;
+      width: 100%;
+    }
+    .dash-chart canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .dash-hint {
+      margin-top: var(--s-3);
+      padding: var(--s-3) var(--s-4);
+      border-left: 3px solid var(--gray-500);
+      background: var(--bg-input);
+      border-radius: 0 var(--r-md) var(--r-md) 0;
+      color: var(--txt-secondary);
+      font-size: var(--fs-xs);
+      line-height: var(--lh-base);
+    }
+    .dash-heatmap-wrap {
+      overflow-x: auto;
+    }
+    .dash-heatmap {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: var(--fs-sm);
+    }
+    .dash-th {
+      padding: var(--s-3);
+      text-align: center;
+      font-size: var(--fs-xs);
+      font-weight: var(--fw-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--red);
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    .dash-td {
+      padding: var(--s-3);
+      text-align: center;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .dash-td--label {
+      text-align: left;
+      font-family: var(--font-family);
+      color: var(--txt-primary);
+      font-weight: var(--fw-semibold);
+    }
+    .dash-td--total {
+      font-weight: var(--fw-bold);
+      border-left: 2px solid var(--border);
+    }
+    .dash-card__title {
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-bold);
+      color: var(--txt-primary);
+      margin-bottom: var(--s-3);
+    }
+    .dash-heatmap--rank {
+      min-width: 460px;
+    }
+    .dash-heatmap--rank .dash-td {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .dash-heatmap--rank .dash-td--num,
+    .dash-heatmap--rank .dash-td--rank {
+      white-space: nowrap;
+    }
+    .dash-heatmap--rank .dash-th {
+      color: var(--txt-secondary);
+      font-size: 10px;
+    }
+    .dash-td--duo {
+      max-width: 220px;
+      font-family: var(--font-family);
+      color: var(--txt-primary);
+      font-weight: var(--fw-semibold);
+      text-align: left;
+    }
+    .dash-det {
+      margin-top: var(--s-1);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--txt-muted);
+      font-weight: var(--fw-regular);
+      letter-spacing: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .dash-td--rank {
+      color: var(--txt-muted);
+      font-weight: var(--fw-bold);
+    }
+    .dash-td--num {
+      font-weight: var(--fw-semibold);
+    }
+    .dash-bar {
+      min-width: 120px;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .dash-bar__fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+    .dash-words-wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--s-4);
+    }
+    .dash-words {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--border);
+      border-radius: var(--r-md);
+      padding: var(--s-4);
+      box-shadow: var(--shadow-sm);
+    }
+    .dash-words__title {
+      font-weight: var(--fw-semibold);
+      font-size: var(--fs-sm);
+      margin-bottom: var(--s-3);
+      border-left: 3px solid var(--border);
+      padding-left: var(--s-2);
+    }
+    .dash-words__count {
+      color: var(--txt-muted);
+      font-weight: var(--fw-normal);
+      font-size: var(--fs-xs);
+    }
+    .dash-words__list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--s-2);
+    }
+    .dash-words__item {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--r-pill);
+      padding: 2px 10px;
+      font-size: var(--fs-xs);
+      color: var(--txt-secondary);
+    }
+    .dash-words__item b {
+      color: var(--red);
+      margin-left: 2px;
+    }
   </style>
 </head>
 <body>
@@ -300,6 +515,18 @@
         <div class="empty__title">Carregando dados...</div>
       </div>
     </div>
+
+    <div class="flags-dashboard">
+      <div class="flags-page__header">
+        <h2 class="flags-page__title">Dashboard de Notas & Justificativas</h2>
+      </div>
+      <div id="flags-dashboard-container">
+        <div class="empty" style="grid-column: 1 / -1;">
+          <div class="empty__icon">&#8987;</div>
+          <div class="empty__title">Carregando dashboard...</div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -310,6 +537,7 @@
   </script>
 
   <!-- App logic -->
-  <script type="module" src="js/report_flags.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script type="module" src="js/report_flags.js?v=10"></script>
 </body>
 </html>

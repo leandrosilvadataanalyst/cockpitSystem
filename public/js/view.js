@@ -232,6 +232,9 @@ function renderFilters() {
   selTier.innerHTML = `<option value="">Todos</option>` +
     tiers.map(t => `<option value="${esc(t)}" ${state.filters.tier === t ? 'selected' : ''}>${esc(t)}</option>`).join('')
 
+  const selChurn = $('#filter-churn')
+  if (selChurn) selChurn.value = state.filters.churn || ''
+
   $('#filter-data-inicio').value = state.filters.data_inicio || ''
   $('#filter-data-fim').value = state.filters.data_fim || ''
   $('#filter-search').value = state.filters.search || ''
