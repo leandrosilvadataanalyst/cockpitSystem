@@ -3,7 +3,7 @@
  * Responsabilidade: pegar dados do model e renderizar.
  * NAO tem regras de negocio aqui.
  */
-import { state, getPage, getTotalPages, getKPIs, uniqueValues, isColumnVisible, setColumnsRegistry } from './model.js'
+import { state, getPage, getTotalPages, getKPIs, filterClientes, isColumnVisible, setColumnsRegistry } from './model.js'
 
 const $ = (sel) => document.querySelector(sel)
 const $$ = (sel) => document.querySelectorAll(sel)
@@ -206,31 +206,24 @@ function renderFilters() {
   selSquad.innerHTML = `<option value="">Todas as squads</option>` +
     state.cache.squads.map(s => `<option value="${esc(s.id)}" ${state.filters.squad_id === s.id ? 'selected' : ''}>${esc(s.label)}</option>`).join('')
 
-  const selCoord = $('#filter-coordenador')
-  const coords = state.filters.squad_id
-    ? state.cache.coordenadores.filter(c => c.squad_id === state.filters.squad_id)
-    : state.cache.coordenadores
-  selCoord.innerHTML = `<option value="">Todos</option>` +
-    coords.map(c => `<option value="${esc(c.nome)}" ${state.filters.coordenador === c.nome ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')
+  // Opcoes derivadas dos clientes reais, em cascata com os demais filtros
+  const opts = (pool, field, label) => {
+    const set = new Set()
+    for (const c of pool) {
+      const v = c[field]
+      if (v !== null && v !== undefined && String(v).trim() !== '') set.add(v)
+    }
+    const values = [...set].sort((a, b) => String(a).localeCompare(String(b), 'pt-BR'))
+    const sel = state.filters[field]
+    if (sel && !values.includes(sel)) values.unshift(sel)
+    return `<option value="">${label}</option>` +
+      values.map(v => `<option value="${esc(v)}" ${sel === v ? 'selected' : ''}>${esc(v)}</option>`).join('')
+  }
 
-  const selAcc = $('#filter-account')
-  const accs = state.filters.squad_id
-    ? state.cache.accounts.filter(a => a.squad_id === state.filters.squad_id)
-    : state.cache.accounts
-  selAcc.innerHTML = `<option value="">Todas</option>` +
-    accs.map(a => `<option value="${esc(a.nome)}" ${state.filters.account === a.nome ? 'selected' : ''}>${esc(a.nome)}</option>`).join('')
-
-  const selGT = $('#filter-gt')
-  const gts = state.filters.squad_id
-    ? state.cache.gts.filter(g => g.squad_id === state.filters.squad_id)
-    : state.cache.gts
-  selGT.innerHTML = `<option value="">Todos</option>` +
-    gts.map(g => `<option value="${esc(g.nome)}" ${state.filters.gt === g.nome ? 'selected' : ''}>${esc(g.nome)}</option>`).join('')
-
-  const selTier = $('#filter-tier')
-  const tiers = uniqueValues('tier')
-  selTier.innerHTML = `<option value="">Todos</option>` +
-    tiers.map(t => `<option value="${esc(t)}" ${state.filters.tier === t ? 'selected' : ''}>${esc(t)}</option>`).join('')
+  $('#filter-coordenador').innerHTML = opts(filterClientes(state.clientes, state.filters, 'coordenador'), 'coordenador', 'Todos')
+  $('#filter-account').innerHTML = opts(filterClientes(state.clientes, state.filters, 'account'), 'account', 'Todas')
+  $('#filter-gt').innerHTML = opts(filterClientes(state.clientes, state.filters, 'gt'), 'gt', 'Todos')
+  $('#filter-tier').innerHTML = opts(filterClientes(state.clientes, state.filters, 'tier'), 'tier', 'Todos')
 
   const selChurn = $('#filter-churn')
   if (selChurn) selChurn.value = state.filters.churn || ''

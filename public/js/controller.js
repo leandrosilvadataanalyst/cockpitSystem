@@ -54,7 +54,7 @@ function showLogin() {
     <div class="login-card">
       <div class="login-card__brand">
         <img class="login-card__mark" src="assets/v4companykloh_logotipo.png" alt="V4 Company" />
-        <div class="login-card__brand-text">Gestao de squads | Cockpit</div>
+        <div class="login-card__brand-text">Gestao de squads | Klohckpit</div>
       </div>
       <form class="login-card__form" id="login-form" autocomplete="on">
         <div id="login-error" class="login-card__error" style="display:none"></div>

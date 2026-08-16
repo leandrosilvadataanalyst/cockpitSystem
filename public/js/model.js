@@ -63,28 +63,36 @@ export async function loadAll() {
   state.cache.gts = gts || []
 }
 
-export function applyFilters() {
-  const f = state.filters
-  let r = state.clientes
+export function filterClientes(arr, filters, ignoreKey = null) {
+  const f = filters
+  const skip = (k) => k === ignoreKey
+  let r = arr
 
-  if (f.squad_id) r = r.filter(c => c.squad_id === f.squad_id)
-  if (f.coordenador) r = r.filter(c => c.coordenador === f.coordenador)
-  if (f.account) r = r.filter(c => c.account === f.account)
-  if (f.gt) r = r.filter(c => c.gt === f.gt)
-  if (f.tier) r = r.filter(c => c.tier === f.tier)
-  if (f.churn) {
+  if (!skip('squad_id') && f.squad_id) r = r.filter(c => c.squad_id === f.squad_id)
+  if (!skip('coordenador') && f.coordenador) r = r.filter(c => c.coordenador === f.coordenador)
+  if (!skip('account') && f.account) r = r.filter(c => c.account === f.account)
+  if (!skip('gt') && f.gt) r = r.filter(c => c.gt === f.gt)
+  if (!skip('tier') && f.tier) r = r.filter(c => c.tier === f.tier)
+  if (!skip('churn') && f.churn) {
     const isChurned = (c) => {
       const v = String(c.churn_realizado ?? '').trim().toLowerCase()
       return v === 'sim' || v === 'true' || v === '1' || v === 'yes'
     }
     r = r.filter(c => f.churn === 'Sim' ? isChurned(c) : !isChurned(c))
   }
-  if (f.data_inicio) r = r.filter(c => c.data_atualizacao && c.data_atualizacao >= f.data_inicio)
-  if (f.data_fim) r = r.filter(c => c.data_atualizacao && c.data_atualizacao <= f.data_fim)
-  if (f.search) {
+  if (!skip('data_inicio') && f.data_inicio) r = r.filter(c => c.data_atualizacao && c.data_atualizacao >= f.data_inicio)
+  if (!skip('data_fim') && f.data_fim) r = r.filter(c => c.data_atualizacao && c.data_atualizacao <= f.data_fim)
+  if (!skip('search') && f.search) {
     const s = f.search.toLowerCase()
     r = r.filter(c => c.nome?.toLowerCase().includes(s) || c.gt?.toLowerCase().includes(s))
   }
+
+  return r
+}
+
+export function applyFilters() {
+  const f = state.filters
+  let r = filterClientes(state.clientes, f)
 
   // Sort
   const { col, dir } = state.sort
