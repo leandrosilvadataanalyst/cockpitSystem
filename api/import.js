@@ -115,6 +115,17 @@ const DB_COL_MAP = {
 };
 const BOOL_COLS = new Set(['entregas_prazo', 'entregas_qualidade', 'relacionamento']);
 
+// Nomes canonicos: variacoes da mesma pessoa -> nome unico.
+const NAME_ALIASES = {
+  'giullio cesar da silva barbosa': 'Giullio Barbosa',
+};
+
+function normalizePersonName(s) {
+  if (!s) return s;
+  const key = String(s).toLowerCase().trim().replace(/\s+/g, ' ');
+  return NAME_ALIASES[key] || s;
+}
+
 // Override de mapeamento por squad.
 // wall-street atualizou a planilha: nao usa mais 'Flag calculada' no padrao
 // antigo. Para ela, a coluna 'Flag calculada' representa a Flag MEDIA.
@@ -269,6 +280,8 @@ function rowToPayload(row, squadId, warnings) {
       else if (warnings) warnings.push(`${nome}: '${sheetCol}' = '${v}' nao parseavel (numerico)`);
     } else if (DATE_COLS.has(target)) {
       payload[target] = parseDateBr(v);
+    } else if (target === 'coordenador' || target === 'account' || target === 'gt') {
+      payload[target] = normalizePersonName(v);
     } else {
       payload[target] = v;
     }

@@ -222,7 +222,7 @@ async function triggerImportFromSheets() {
     btn.textContent = 'Importando...'
   }
   try {
-    const resp = await fetch('/api/import')
+    const resp = await fetch('api/import')
     const data = await resp.json()
     if (data.ok) {
       showToast('Importacao concluida! Recarregando...', 'success', 4000)

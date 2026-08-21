@@ -133,6 +133,19 @@ COL_MAP = {
 # Colunas booleanas (CSV: 'TRUE'/'FALSE'/vazio)
 BOOL_COLS = {"entregas_prazo", "entregas_qualidade", "relacionamento"}
 
+# Nomes canonicos: variacoes da mesma pessoa -> nome unico.
+NAME_ALIASES = {
+    "giullio cesar da silva barbosa": "Giullio Barbosa",
+}
+
+
+def normalize_person_name(s):
+    """Normaliza nome de pessoa via NAME_ALIASES (case-insensitive)."""
+    if not s:
+        return s
+    key = " ".join(str(s).lower().split())
+    return NAME_ALIASES.get(key, s)
+
 
 def parse_bool(v):
     """Converte 'TRUE'/'FALSE'/vazio para booleano Python."""
@@ -166,6 +179,8 @@ def row_to_payload(row):
             continue
         if csv_col in BOOL_COLS:
             payload[db_col] = parse_bool(v)
+        elif db_col in ("coordenador", "account", "gt"):
+            payload[db_col] = normalize_person_name(v)
         else:
             payload[db_col] = clean(v)
 

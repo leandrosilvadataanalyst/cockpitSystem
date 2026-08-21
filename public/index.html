@@ -15,8 +15,8 @@
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/login.css" />
 
-  <!-- IMPORTANTE: carregar antes do app -->
-  <script src="/api/config.js"></script>
+  <!-- IMPORTANTE: carregar antes do app (caminho relativo: funciona em XAMPP e Vercel) -->
+  <script src="api/config.js"></script>
 </head>
 <body>
 
@@ -49,22 +49,9 @@
               <span>Visao Geral</span>
               <span class="sidebar__count" id="sidebar-count-clientes">0</span>
             </a>
-            <a class="sidebar__item" href="#">
-              <span class="sidebar__icon" aria-hidden="true">▦</span>
-              <span>Clientes</span>
-            </a>
-            <a class="sidebar__item" href="#">
-              <span class="sidebar__icon" aria-hidden="true">▤</span>
-              <span>Squads</span>
-              <span class="sidebar__count">4</span>
-            </a>
-            <a class="sidebar__item" href="#">
-              <span class="sidebar__icon" aria-hidden="true">◐</span>
-              <span>Coordenadores</span>
-            </a>
-            <a class="sidebar__item" href="#">
-              <span class="sidebar__icon" aria-hidden="true">▥</span>
-              <span>GTs</span>
+            <a class="sidebar__item" href="tratativas.html">
+              <span class="sidebar__icon" aria-hidden="true">◔</span>
+              <span>Tratativas</span>
             </a>
           </div>
         </div>
@@ -72,10 +59,6 @@
         <div class="sidebar__section">
           <div class="sidebar__section-title">Relatorios</div>
           <div class="sidebar__items">
-            <a class="sidebar__item" href="#" id="sidebar-export-csv">
-              <span class="sidebar__icon" aria-hidden="true">⎙</span>
-              <span>Exportar CSV</span>
-            </a>
             <a class="sidebar__item" href="relatorio-flags.html">
               <span class="sidebar__icon" aria-hidden="true">▣</span>
               <span>Relatorio de Flags por Squad</span>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tratativas - Klohckpit</title>
+  <meta name="description" content="Espelho do pipe de Tratativas (Pipefy): kanban por etapa, historico e relatorios." />
+  <link rel="icon" type="image/svg+xml" href="assets/mktlab-logo.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/login.css" />
+
+  <!-- IMPORTANTE: carregar antes do app (caminho relativo: funciona em XAMPP e Vercel) -->
+  <script src="api/config.js"></script>
+
+  <style>
+    .trat-page { padding: var(--s-6); max-width: 1680px; margin: 0 auto; }
+    .trat-page__header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--s-5); gap: var(--s-3); flex-wrap: wrap;
+    }
+    .trat-page__title { font-size: var(--fs-lg); font-weight: var(--fw-semibold); }
+    .trat-page__actions { display: flex; gap: var(--s-2); align-items: center; }
+    .trat-sync-info { font-size: var(--fs-xs); color: var(--txt-muted); }
+
+    .trat-toolbar {
+      display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--s-3);
+      padding: var(--s-3) var(--s-4);
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-lg); margin-bottom: var(--s-5);
+    }
+    .trat-toolbar__group { display: flex; flex-direction: column; gap: 4px; }
+    .trat-toolbar__label {
+      font-size: 11px; font-weight: var(--fw-bold); text-transform: uppercase;
+      letter-spacing: 0.3px; color: var(--txt-muted);
+    }
+    .trat-toolbar select, .trat-toolbar input {
+      min-width: 200px; padding: var(--s-2) var(--s-3);
+      border-radius: var(--r-md); border: 1px solid var(--border);
+      background: var(--bg-input); color: var(--txt-primary);
+      font-size: var(--fs-sm); font-family: var(--font-family);
+    }
+
+    /* ── Kanban ── */
+    .kanban {
+      display: grid; grid-template-columns: repeat(5, minmax(230px, 1fr));
+      gap: var(--s-3); overflow-x: auto; padding-bottom: var(--s-2);
+    }
+    .kanban__col {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-lg); display: flex; flex-direction: column;
+      max-height: 640px;
+    }
+    .kanban__col-header {
+      padding: var(--s-3) var(--s-4); border-bottom: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: var(--s-2);
+    }
+    .kanban__col-title { font-weight: var(--fw-bold); font-size: var(--fs-sm); }
+    .kanban__col-count {
+      font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: var(--fw-bold);
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--r-pill); padding: 1px 8px;
+    }
+    .kanban__col-body { padding: var(--s-2); overflow-y: auto; display: flex; flex-direction: column; gap: var(--s-2); }
+    .kan-card {
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-left: 3px solid var(--kpi-line, var(--red));
+      border-radius: var(--r-md); padding: var(--s-3); cursor: pointer;
+      transition: border-color var(--t-fast), transform var(--t-fast);
+    }
+    .kan-card:hover { border-color: var(--gray-500); transform: translateY(-1px); }
+    .kan-card { cursor: grab; }
+    .kan-card:active { cursor: grabbing; }
+    .kan-card.dragging { opacity: .45; }
+    .kanban__col-body.drag-over {
+      outline: 2px dashed var(--red); outline-offset: -4px;
+      background: rgba(227,73,72,.06); border-radius: var(--r-md);
+    }
+    .kan-card__title { font-size: var(--fs-sm); font-weight: var(--fw-semibold); margin-bottom: 4px; }
+    .kan-card__client { font-size: var(--fs-xs); color: var(--txt-secondary); margin-bottom: 4px; }
+    .kan-card__meta {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: var(--s-2);
+      font-size: 10px; color: var(--txt-muted); font-family: var(--font-mono);
+    }
+    .kan-card__tag {
+      border: 1px solid var(--border); border-radius: var(--r-pill); padding: 0 6px;
+    }
+    .kan-card__tag--churn { color: var(--red); border-color: rgba(227,73,72,.5); }
+    .kan-card__tag--thread { color: var(--green); border-color: rgba(27,175,122,.5); }
+    .kan-card__aging { margin-left: auto; }
+    .kan-card__aging--warn { color: var(--gray-100); font-weight: var(--fw-bold); }
+    .kan-card__aging--late { color: var(--red); font-weight: var(--fw-bold); }
+
+    /* ── Tabela ── */
+    .trat-section { margin-top: var(--s-6); }
+    .trat-section__header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--s-3); flex-wrap: wrap; margin-bottom: var(--s-3);
+    }
+    .trat-section__header .trat-section__title { margin-bottom: 0; }
+    .trat-export { display: flex; align-items: center; gap: var(--s-2); }
+    .trat-export__label { font-size: var(--fs-xs); color: var(--txt-muted); text-transform: uppercase; letter-spacing: .3px; }
+    .trat-section__title { font-size: var(--fs-md); font-weight: var(--fw-semibold); margin-bottom: var(--s-3); }
+    .flags-scroll { overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--red) var(--gray-700); }
+    .trat-table {
+      width: 100%; min-width: 1200px; border-collapse: separate; border-spacing: 0;
+      font-size: var(--fs-sm); table-layout: fixed;
+    }
+    .trat-table th {
+      position: sticky; top: 0; z-index: 3; text-align: left;
+      padding: var(--s-3) var(--s-4); font-size: 12px; font-weight: var(--fw-bold);
+      color: var(--red); text-transform: uppercase; letter-spacing: 0.4px;
+      border-bottom: 2px solid var(--border); white-space: nowrap; background: var(--bg-card);
+    }
+    .trat-table td {
+      padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--border);
+      color: var(--txt-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .trat-table tbody tr:hover { background: var(--bg-row-hover); }
+    .etapa-badge {
+      display: inline-block; padding: 3px 10px; border-radius: var(--r-pill);
+      font-size: var(--fs-xs); font-weight: var(--fw-bold); text-transform: uppercase;
+      letter-spacing: 0.2px; line-height: 1.4; white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    /* Paleta: apenas preto/branco/cinza/vermelho/verde (fundo solido = legivel) */
+    .etapa-0 { background: var(--gray-600); color: var(--gray-50); border-color: var(--gray-500); }
+    .etapa-1 { background: var(--gray-400); color: var(--white);    border-color: var(--gray-300); }
+    .etapa-2 { background: var(--gray-200); color: var(--black);    border-color: var(--gray-100); }
+    .etapa-3 { background: var(--red-dark); color: var(--white);    border-color: var(--red); }
+    .etapa-4 { background: var(--green-dark); color: var(--white);  border-color: var(--green); }
+
+    /* ── Relatorio aging ── */
+    .aging-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--s-4); }
+    .dash-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: var(--s-4); box-shadow: var(--shadow-md);
+    }
+    .dash-card__title { font-size: var(--fs-sm); font-weight: var(--fw-bold); margin-bottom: var(--s-3); }
+    .dash-th, .dash-td { padding: var(--s-2) var(--s-3); font-size: var(--fs-xs); }
+    .aging-table { width: 100%; border-collapse: collapse; }
+    .aging-table th {
+      text-align: left; color: var(--txt-muted); text-transform: uppercase;
+      font-size: 10px; letter-spacing: .3px; border-bottom: 1px solid var(--border); padding: var(--s-2) var(--s-3);
+    }
+    .aging-table td { border-bottom: 1px solid var(--border); padding: var(--s-2) var(--s-3); font-family: var(--font-mono); }
+    .aging-bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,.06); overflow: hidden; min-width: 80px; }
+    .aging-bar__fill { height: 100%; border-radius: 4px; }
+
+    /* Modal historico */
+    .hist-list { list-style: none; padding: 0; margin: 0; }
+    .hist-item {
+      display: flex; align-items: center; gap: var(--s-3);
+      padding: var(--s-3) 0; border-bottom: 1px solid var(--border);
+    }
+    .hist-item:last-child { border-bottom: none; }
+    .hist-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-500); flex-shrink: 0; }
+    .hist-dot--done { background: var(--green); }
+    .hist-dot--current { background: var(--red); box-shadow: 0 0 0 3px rgba(227,73,72,.2); }
+    .hist-main { flex: 1; }
+    .hist-etapa { font-weight: var(--fw-semibold); font-size: var(--fs-sm); }
+    .hist-dates { font-size: var(--fs-xs); color: var(--txt-muted); font-family: var(--font-mono); }
+    .hist-dur { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--txt-secondary); }
+  </style>
+</head>
+<body>
+
+  <!-- Loader -->
+  <div id="loader" role="status" aria-label="Carregando...">
+    <div class="spinner"></div>
+  </div>
+
+  <main class="trat-page">
+    <div class="trat-page__header">
+      <h1 class="trat-page__title">Tratativas</h1>
+      <div class="trat-page__actions">
+        <span class="trat-sync-info" id="sync-info"></span>
+        <button class="filter-bar__btn" id="btn-sync" type="button" title="Sincronizar com o Pipefy">&#8635; Sincronizar</button>
+        <button class="filter-bar__btn" id="btn-voltar" type="button">&larr; Voltar</button>
+      </div>
+    </div>
+
+    <div class="trat-toolbar">
+      <div class="trat-toolbar__group">
+        <label class="trat-toolbar__label" for="filtro-squad">Squad</label>
+        <select id="filtro-squad"><option value="">Todas as squads</option></select>
+      </div>
+      <div class="trat-toolbar__group">
+        <label class="trat-toolbar__label" for="filtro-etapa">Etapa</label>
+        <select id="filtro-etapa"><option value="">Todas as etapas</option></select>
+      </div>
+      <div class="trat-toolbar__group">
+        <label class="trat-toolbar__label" for="filtro-busca">Buscar</label>
+        <input type="search" id="filtro-busca" placeholder="Titulo ou cliente..." />
+      </div>
+    </div>
+
+    <div class="kanban" id="kanban"></div>
+
+    <section class="trat-section">
+      <div class="trat-section__header">
+        <h2 class="trat-section__title">Detalhamento</h2>
+        <div class="trat-export">
+          <span class="trat-export__label">Baixar:</span>
+          <button class="filter-bar__btn" id="btn-exp-xlsx" type="button">Excel</button>
+          <button class="filter-bar__btn" id="btn-exp-csv" type="button">CSV</button>
+          <button class="filter-bar__btn" id="btn-exp-json" type="button">JSON</button>
+        </div>
+      </div>
+      <div class="flags-scroll">
+        <table class="trat-table">
+          <thead>
+            <tr>
+              <th style="width:22%">Titulo</th>
+              <th style="width:12%">Cliente</th>
+              <th style="width:8%">Squad</th>
+              <th style="width:17%">Etapa</th>
+              <th style="width:13%">Categoria STEP</th>
+              <th style="width:6%">Churn</th>
+              <th style="width:9%">Thread</th>
+              <th style="width:13%">Na etapa ha</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-tratativas"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="trat-section">
+      <h2 class="trat-section__title">Relatorio &mdash; Aging por etapa</h2>
+      <div class="aging-grid" id="aging-grid"></div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-backdrop hidden" id="modal-backdrop">
+    <div class="modal hidden" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal__header">
+        <div class="modal__title" id="modal-title">Historico</div>
+        <button class="modal__close" id="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal__body" id="modal-body"></div>
+      <div class="modal__footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script type="module" src="js/tratativas.js?v=1"></script>
+</body>
+</html>

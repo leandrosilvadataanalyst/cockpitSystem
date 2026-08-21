@@ -130,6 +130,21 @@ COL_MAP = {
 }
 
 
+# Nomes canonicos: variacoes da mesma pessoa -> nome unico.
+# Aplicado aos campos de pessoa (coordenador, account, gt).
+NAME_ALIASES = {
+    'giullio cesar da silva barbosa': 'Giullio Barbosa',
+}
+
+
+def normalize_person_name(s):
+    """Normaliza nome de pessoa via NAME_ALIASES (case-insensitive)."""
+    if not s:
+        return s
+    key = ' '.join(s.lower().split())
+    return NAME_ALIASES.get(key, s)
+
+
 def clean(s):
     """String vazia ou placeholder -> None."""
     if s is None:
@@ -241,6 +256,8 @@ def fetch_all():
                             payload[db_col] = parsed
                     elif db_col in DATE_COLS:
                         payload[db_col] = parse_date_br(v)
+                    elif db_col in ('coordenador', 'account', 'gt'):
+                        payload[db_col] = normalize_person_name(v)
                     else:
                         payload[db_col] = v
 

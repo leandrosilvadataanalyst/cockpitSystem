@@ -44,7 +44,7 @@
 
   /* Status (flags) — excecao da regra de cores: amarelo/laranja sao permitidos */
   --status-critico:    var(--red);
-  --status-danger:     #f57c00;
+  --status-danger:     var(--red);
   --status-amarelo:    #fbc02d;
   --status-verde:      var(--green);
   --status-neutro:     var(--gray-300);

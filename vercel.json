@@ -9,6 +9,10 @@
     {
       "path": "/api/import",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/sync_tratativas",
+      "schedule": "0 9 * * *"
     }
   ],
   "headers": [

@@ -107,6 +107,21 @@ export const DB = {
     return supabaseFetch(`/clientes?id=eq.${id}`, { method: 'DELETE' })
   },
 
+  // ── Tratativas (espelho Pipefy) ──
+  async getTratativas(filters = {}) {
+    const params = new URLSearchParams()
+    params.set('select', '*')
+    if (filters.squad_id) params.append('squad_id', `eq.${filters.squad_id}`)
+    if (filters.etapa) params.append('etapa', `eq.${filters.etapa}`)
+    if (filters.search) params.append('titulo', `ilike.*${filters.search}*`)
+    params.append('order', 'data_atualizacao_etapa.desc')
+    return supabaseFetch(`/tratativas?${params.toString()}`)
+  },
+
+  async getTratativaHistorico(cardId) {
+    return supabaseFetch(`/tratativa_historico?card_id=eq.${cardId}&order=entrou_em.asc`)
+  },
+
   // ── Dimensoes (cache) ──
   async getSquads() {
     return supabaseFetch('/squads?ativo=eq.true&order=label.asc')
