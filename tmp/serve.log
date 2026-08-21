@@ -1,8 +1,0 @@
-[OK] .env carregado
-  URL: https://wmjmcrmpsnibwcbmwdig.supabase.co
-
-  Cockpit em http://localhost:3000
-  Proxy: /api/* -> https://wmjmcrmpsnibwcbmwdig.supabase.co/rest/v1/*
-  Ctrl+C para parar
-
-  [proxy] /clientes?select=id&limit=1

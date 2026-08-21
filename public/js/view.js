@@ -412,6 +412,53 @@ export function showModal(title, content, footer = '') {
 export function hideModal() {
   $('#modal').classList.add('hidden')
   $('#modal-backdrop').classList.add('hidden')
+  $('#modal').classList.remove('modal--wide')
+}
+
+// Dialogo de confirmacao (substitui o confirm() nativo). Retorna Promise<boolean>.
+export function confirmDialog(message, { title = 'Confirmar acao', okLabel = 'Confirmar', hint = '' } = {}) {
+  return new Promise((resolve) => {
+    const content = `
+      <div class="confirm-dialog">
+        <p>${message}</p>
+        ${hint ? `<p class="confirm-dialog__hint">${hint}</p>` : ''}
+      </div>`
+    const footer = `
+      <button type="button" class="form__btn form__btn--secondary" data-confirm="0">Cancelar</button>
+      <button type="button" class="form__btn form__btn--danger" data-confirm="1">${okLabel}</button>`
+    showModal(title, content, footer)
+
+    let settled = false
+    const done = (val) => {
+      if (settled) return
+      settled = true
+      document.removeEventListener('click', onClick, true)
+      document.removeEventListener('keydown', onKey, true)
+      hideModal()
+      resolve(val)
+    }
+    // Fase de captura: intercepta antes dos handlers globais de fechar modal
+    const onClick = (e) => {
+      const btn = e.target.closest('[data-confirm]')
+      if (btn) {
+        e.stopPropagation(); e.preventDefault()
+        done(btn.dataset.confirm === '1')
+        return
+      }
+      if (e.target.closest('#modal-close') || e.target.id === 'modal-backdrop') {
+        e.stopPropagation(); e.preventDefault()
+        done(false)
+      }
+    }
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation(); e.preventDefault()
+        done(false)
+      }
+    }
+    document.addEventListener('click', onClick, true)
+    document.addEventListener('keydown', onKey, true)
+  })
 }
 
 export function showToast(message, type = 'info', duration = 3500) {
@@ -476,6 +523,7 @@ export function showColumnsModal() {
     <button class="form__btn form__btn--primary" id="cols-apply">Aplicar</button>
   `
   showModal('Escolher Colunas', html, footer)
+  $('#modal').classList.add('modal--wide')
 }
 
 // ═══ Modal de detalhes / edicao do cliente ═══

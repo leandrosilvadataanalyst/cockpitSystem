@@ -134,14 +134,28 @@ COL_MAP = {
 # Aplicado aos campos de pessoa (coordenador, account, gt).
 NAME_ALIASES = {
     'giullio cesar da silva barbosa': 'Giullio Barbosa',
+    'matheus eduardo da silva diogo': 'Matheus Eduardo',
+    'matheus eduardo': 'Matheus Eduardo',
+    'felipe porto': 'Felipe Porto',
+    'guilherme': 'Guilherme Santana',
+    'bruna ferreira': 'Bruna Ferreira Alves',
+}
+
+# Aliases que dependem do campo: mesmo nome curto, pessoas diferentes.
+FIELD_ALIASES = {
+    'account': {'leonardo': 'Leonardo Volponi'},
+    'gt': {'leonardo': 'Leonardo Rafael Villas Boas'},
 }
 
 
-def normalize_person_name(s):
-    """Normaliza nome de pessoa via NAME_ALIASES (case-insensitive)."""
+def normalize_person_name(s, field=None):
+    """Normaliza nome de pessoa via NAME_ALIASES (case-insensitive).
+    FIELD_ALIASES tem precedencia quando o campo eh informado."""
     if not s:
         return s
     key = ' '.join(s.lower().split())
+    if field and FIELD_ALIASES.get(field, {}).get(key):
+        return FIELD_ALIASES[field][key]
     return NAME_ALIASES.get(key, s)
 
 
@@ -257,7 +271,7 @@ def fetch_all():
                     elif db_col in DATE_COLS:
                         payload[db_col] = parse_date_br(v)
                     elif db_col in ('coordenador', 'account', 'gt'):
-                        payload[db_col] = normalize_person_name(v)
+                        payload[db_col] = normalize_person_name(v, db_col)
                     else:
                         payload[db_col] = v
 

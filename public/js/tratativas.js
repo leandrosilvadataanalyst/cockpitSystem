@@ -313,7 +313,7 @@ async function abrirHistorico(cardId) {
   const t = state.all.find(x => x.card_id === cardId)
   $('#modal-title').textContent = t ? t.titulo : 'Historico'
   $('#modal-body').innerHTML = '<div class="empty"><div class="empty__title">Carregando historico...</div></div>'
-  $('#modal-footer').innerHTML = t?.url ? `<a class="filter-bar__btn filter-bar__btn--primary" href="${esc(t.url)}" target="_blank" rel="noopener">Abrir no Pipefy</a>` : ''
+  $('#modal-footer').innerHTML = t?.url ? `<a class="filter-bar__btn filter-bar__btn--green" href="${esc(t.url)}" target="_blank" rel="noopener">Abrir no Pipefy</a>` : ''
   $('#modal-backdrop').classList.remove('hidden')
   $('#modal').classList.remove('hidden')
 

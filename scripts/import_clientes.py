@@ -136,14 +136,28 @@ BOOL_COLS = {"entregas_prazo", "entregas_qualidade", "relacionamento"}
 # Nomes canonicos: variacoes da mesma pessoa -> nome unico.
 NAME_ALIASES = {
     "giullio cesar da silva barbosa": "Giullio Barbosa",
+    "matheus eduardo da silva diogo": "Matheus Eduardo",
+    "matheus eduardo": "Matheus Eduardo",
+    "felipe porto": "Felipe Porto",
+    "guilherme": "Guilherme Santana",
+    "bruna ferreira": "Bruna Ferreira Alves",
+}
+
+# Aliases que dependem do campo: mesmo nome curto, pessoas diferentes.
+FIELD_ALIASES = {
+    "account": {"leonardo": "Leonardo Volponi"},
+    "gt": {"leonardo": "Leonardo Rafael Villas Boas"},
 }
 
 
-def normalize_person_name(s):
-    """Normaliza nome de pessoa via NAME_ALIASES (case-insensitive)."""
+def normalize_person_name(s, field=None):
+    """Normaliza nome de pessoa via NAME_ALIASES (case-insensitive).
+    FIELD_ALIASES tem precedencia quando o campo eh informado."""
     if not s:
         return s
     key = " ".join(str(s).lower().split())
+    if field and FIELD_ALIASES.get(field, {}).get(key):
+        return FIELD_ALIASES[field][key]
     return NAME_ALIASES.get(key, s)
 
 
@@ -180,7 +194,7 @@ def row_to_payload(row):
         if csv_col in BOOL_COLS:
             payload[db_col] = parse_bool(v)
         elif db_col in ("coordenador", "account", "gt"):
-            payload[db_col] = normalize_person_name(v)
+            payload[db_col] = normalize_person_name(v, db_col)
         else:
             payload[db_col] = clean(v)
 
@@ -246,6 +260,17 @@ def import_clientes(csv_path: Path, batch_size: int = 50):
                     log.error(f"    Exemplo: {item.get('nome')!r}")
 
         log.info(f"  squad={squad_id}: {total_ok} OK, {total_err} erros")
+
+        # MIRROR DELETE: remove clientes que sairam da planilha ou foram renomeados.
+        # A chave de upsert e (squad_id, nome) exato; sem isto, variacoes de nome
+        # acumulam duplicatas e clientes removidos ficam para sempre.
+        fetched_names = {r["nome"] for r in squad_rows}
+        existing = supabase.table("clientes").select("id,nome").eq("squad_id", squad_id).execute()
+        stale = [r["id"] for r in existing.data if r["nome"] not in fetched_names]
+        if stale:
+            for j in range(0, len(stale), 100):
+                supabase.table("clientes").delete().in_("id", stale[j:j + 100]).execute()
+            log.info(f"  Removidos {len(stale)} clientes fora da planilha")
 
     # Resumo final
     log.info("Resumo:")

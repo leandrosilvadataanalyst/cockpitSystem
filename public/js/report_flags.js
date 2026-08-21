@@ -1,7 +1,7 @@
 /**
  * report_flags.js - Relatorio de Flags por Squad.
  * Pagina standalone (relatorio-flags.html) que reusa o DB do supabase.js.
- * Mostra 2 tabelas (Flag Calculada e Flag Media) com totais, percentuais
+ * Mostra a tabela de Flag Media com totais, percentuais
  * e resumo de clientes Ativos vs Churn. Suporta filtros por squad/flag
  * e exportacao em CSV e Excel.
  */
@@ -84,24 +84,14 @@ function getFiltered() {
 
 function render() {
   const clientes = getFiltered()
-  tables.calculada = buildTable(clientes, c => c.flag_calculada)
   tables.media = buildTable(clientes, c => c.flag_media)
   const container = $('#flags-report-container')
 
-  container.innerHTML = `
-    ${renderCard({
-      title: 'Flag Calculada',
-      badge: '<span class="flags-badge flags-badge--legado">Legada</span>',
-      note: 'Esta tabela &eacute; <strong>legada</strong>. Futuramente o sistema considerar&aacute; apenas a <strong>Flag M&eacute;dia</strong>.',
-      table: tables.calculada,
-      exportKey: 'calculada',
-    })}
-    ${renderCard({
-      title: 'Flag Media',
-      table: tables.media,
-      exportKey: 'media',
-    })}
-  `
+  container.innerHTML = renderCard({
+    title: 'Flag Media',
+    table: tables.media,
+    exportKey: 'media',
+  })
 
   renderDashboardSafe()
 }
@@ -123,7 +113,7 @@ function renderDashboardSafe() {
   }
 }
 
-function renderCard({ title, badge, note, table, exportKey }) {
+function renderCard({ title, badge, note, table }) {
   const head = `
     <tr>
       <th class="flags-sticky">Squad</th>
@@ -146,12 +136,7 @@ function renderCard({ title, badge, note, table, exportKey }) {
     </tr>`
   return `
     <div class="flags-card">
-      <div class="flags-card__title">${esc(title)}${badge ? ` ${badge}` : ''}
-        <span class="flags-card__export">
-          <button class="flags-export-btn" data-export="csv" data-key="${exportKey}" type="button">CSV</button>
-          <button class="flags-export-btn" data-export="excel" data-key="${exportKey}" type="button">Excel</button>
-        </span>
-      </div>
+      <div class="flags-card__title">${esc(title)}${badge ? ` ${badge}` : ''}</div>
       <div class="table-scroll flags-scroll">
         <table class="flags-table">
           <thead>${head}</thead>
@@ -243,20 +228,9 @@ function bindEvents() {
 
   document.getElementById('btn-export-csv').addEventListener('click', () => {
     exportCsv(tables.media, 'media')
-    exportCsv(tables.calculada, 'calculada')
   })
   document.getElementById('btn-export-excel').addEventListener('click', () => {
     exportExcel(tables.media, 'media')
-    exportExcel(tables.calculada, 'calculada')
-  })
-
-  document.getElementById('flags-report-container').addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-export]')
-    if (!btn) return
-    const table = tables[btn.dataset.key]
-    if (!table) return
-    if (btn.dataset.export === 'csv') exportCsv(table, btn.dataset.key)
-    else exportExcel(table, btn.dataset.key)
   })
 }
 

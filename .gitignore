@@ -5,3 +5,4 @@
 __pycache__/
 # Gerado a partir do .env para servir no XAMPP (o Vercel usa o serverless api/config.js)
 /public/api/config.js
+tmp/

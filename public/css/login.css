@@ -5,7 +5,7 @@
 .login-overlay {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #111 0%, #1a1a1a 50%, #0a0a0a 100%);
+  background: var(--bg-app);
   display: grid;
   place-items: center;
   z-index: 500;
@@ -82,9 +82,11 @@
   transition: border-color var(--t-fast);
 }
 
+.login-card__input:hover,
 .login-card__input:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(27, 175, 122, 0.15);
 }
 
 .login-card__hint {
@@ -99,21 +101,21 @@
   padding: 2px 6px;
   border-radius: 3px;
   font-family: var(--font-mono);
-  color: var(--red);
+  color: var(--txt-secondary);
 }
 
 .login-card__submit {
   height: 44px;
   margin-top: var(--s-2);
-  background: var(--red);
-  color: var(--txt-on-red);
+  background: var(--green);
+  color: var(--white);
   border-radius: var(--r-sm);
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
   transition: background var(--t-fast);
 }
 
-.login-card__submit:hover { background: var(--red-dark); }
+.login-card__submit:hover { background: var(--green-dark); }
 .login-card__submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .login-card__error {

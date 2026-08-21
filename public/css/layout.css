@@ -19,16 +19,14 @@ body {
   font-size: var(--fs-base);
   line-height: var(--lh-base);
   color: var(--txt-primary);
-  background:
-    radial-gradient(ellipse at top, rgba(227, 73, 72, 0.05) 0%, transparent 50%),
-    var(--bg-app);
+  background: var(--bg-app);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
 a {
-  color: var(--red);
-  text-decoration: none;
+  color: var(--txt-primary);
+  text-decoration: underline;
 }
 
 a:hover {
@@ -72,7 +70,7 @@ input, select, textarea {
 /* ─── Sidebar (estilo CRM) ─── */
 .sidebar {
   grid-area: sidebar;
-  background: var(--gray-900);
+  background: var(--bg-app);
   border-right: 1px solid var(--gray-700);
   display: flex;
   flex-direction: column;
@@ -84,7 +82,7 @@ input, select, textarea {
 }
 
 .sidebar::-webkit-scrollbar { width: 6px; }
-.sidebar::-webkit-scrollbar-track { background: var(--gray-900); }
+.sidebar::-webkit-scrollbar-track { background: var(--bg-app); }
 .sidebar::-webkit-scrollbar-thumb { background: var(--gray-700); border-radius: 3px; }
 
 .sidebar__top {
@@ -110,7 +108,7 @@ input, select, textarea {
 
 .sidebar__brand-text { line-height: 1.2; }
 .sidebar__brand-title { font-size: var(--fs-sm); font-weight: var(--fw-bold); letter-spacing: 0.5px; color: var(--white); }
-.sidebar__brand-sub { font-size: 9px; color: var(--gray-300); text-transform: uppercase; letter-spacing: 0.5px; }
+.sidebar__brand-sub { font-size: 9px; color: var(--txt-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
 .sidebar__new-btn {
   display: flex;
@@ -119,7 +117,7 @@ input, select, textarea {
   gap: var(--s-2);
   width: 100%;
   padding: var(--s-2) var(--s-3);
-  background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+  background: var(--red);
   color: var(--white);
   border-radius: var(--r-md);
   font-size: var(--fs-sm);
@@ -150,7 +148,7 @@ input, select, textarea {
   justify-content: space-between;
   font-size: 10px;
   font-weight: var(--fw-semibold);
-  color: var(--gray-300);
+  color: var(--txt-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: var(--s-2) var(--s-3);
@@ -191,7 +189,7 @@ input, select, textarea {
   gap: var(--s-3);
   padding: 6px var(--s-3);
   border-radius: var(--r-sm);
-  color: var(--gray-200);
+  color: var(--txt-muted);
   text-decoration: none;
   font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
@@ -200,15 +198,15 @@ input, select, textarea {
 }
 
 .sidebar__item:hover {
-  background: var(--gray-700);
+  background: var(--bg-card-hover);
   color: var(--white);
   text-decoration: none;
 }
 
 .sidebar__item--active {
-  background: rgba(227, 73, 72, 0.15);
-  color: var(--red);
-  border-left: 2px solid var(--red);
+  background: var(--bg-input);
+  color: var(--txt-primary);
+  border-left: 2px solid var(--gray-400);
   padding-left: calc(var(--s-3) - 2px);
 }
 
@@ -217,18 +215,18 @@ input, select, textarea {
   font-size: 13px;
   text-align: center;
   flex-shrink: 0;
-  color: var(--gray-300);
+  color: var(--txt-muted);
 }
 
 .sidebar__item--active .sidebar__icon,
 .sidebar__item:hover .sidebar__icon {
-  color: var(--red);
+  color: var(--txt-primary);
 }
 
 .sidebar__count {
   margin-left: auto;
   background: var(--gray-700);
-  color: var(--gray-200);
+  color: var(--txt-muted);
   font-size: 10px;
   font-weight: var(--fw-semibold);
   padding: 1px 6px;
@@ -238,8 +236,8 @@ input, select, textarea {
 }
 
 .sidebar__item--active .sidebar__count {
-  background: var(--red);
-  color: var(--white);
+  background: var(--gray-300);
+  color: var(--black);
 }
 
 .sidebar__footer {
@@ -266,7 +264,7 @@ input, select, textarea {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+  background: var(--gray-600);
   color: var(--white);
   display: grid;
   place-items: center;
@@ -277,7 +275,7 @@ input, select, textarea {
 
 .sidebar__user-info { line-height: 1.2; flex: 1; min-width: 0; }
 .sidebar__user-name { font-size: var(--fs-xs); font-weight: var(--fw-semibold); color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sidebar__user-role { font-size: 9px; color: var(--gray-300); text-transform: uppercase; letter-spacing: 0.5px; }
+.sidebar__user-role { font-size: 9px; color: var(--txt-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
 .sidebar__lang {
   display: flex;
@@ -285,7 +283,7 @@ input, select, textarea {
   gap: var(--s-2);
   padding: var(--s-1) var(--s-2);
   font-size: 11px;
-  color: var(--gray-300);
+  color: var(--txt-muted);
   cursor: pointer;
   border-radius: var(--r-sm);
 }
@@ -311,8 +309,8 @@ input, select, textarea {
 }
 
 .sidebar__collapse-btn:hover {
-  background: var(--gray-700);
-  color: var(--red);
+  background: var(--bg-card-hover);
+  color: var(--txt-primary);
 }
 
 .sidebar__collapse-icon {
@@ -414,8 +412,8 @@ input, select, textarea {
 }
 
 .app-header__search:focus-within {
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(227, 73, 72, 0.15);
+  border-color: var(--border-light);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.10);
 }
 
 .app-header__search-icon {
@@ -475,7 +473,7 @@ input, select, textarea {
   align-items: end;
   padding: var(--s-3) var(--s-4);
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(to bottom, var(--gray-800) 0%, var(--bg-card) 100%);
+  background: var(--bg-card);
 }
 
 .filter-bar__group {
@@ -513,6 +511,7 @@ input, select, textarea {
 .filter-bar input:focus {
   outline: none;
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.10);
 }
 
 .filter-bar__search {
@@ -531,6 +530,9 @@ input, select, textarea {
 }
 
 .filter-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: 36px;
   padding: 0 var(--s-4);
   background: var(--gray-700);
@@ -586,15 +588,6 @@ input, select, textarea {
   transition: transform var(--t-fast), box-shadow var(--t-fast);
 }
 
-.kpi::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--kpi-color), transparent 65%);
-  opacity: 0.10;
-  pointer-events: none;
-}
-
 .kpi::after {
   content: '';
   position: absolute;
@@ -602,7 +595,7 @@ input, select, textarea {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--kpi-color), transparent 80%);
+  background: var(--kpi-color);
 }
 
 .kpi:hover {
@@ -651,17 +644,6 @@ input, select, textarea {
   position: relative;
   max-width: 100%;
   contain: layout;
-}
-
-.table-wrap::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--red) 0%, var(--red-dark) 50%, var(--red) 100%);
-  z-index: 5;
 }
 
 .table-toolbar {
@@ -733,13 +715,8 @@ input, select, textarea {
   overflow-y: auto;
   position: relative;
   scrollbar-width: thin;
-  scrollbar-color: var(--red) var(--gray-700);
-  background:
-    linear-gradient(to right, var(--bg-card) 30%, rgba(0,0,0,0)) left center / 40px 100% no-repeat,
-    linear-gradient(to left, var(--bg-card) 30%, rgba(0,0,0,0)) right center / 40px 100% no-repeat,
-    radial-gradient(farthest-side at 0 50%, rgba(227, 73, 72, 0.25), rgba(0,0,0,0)) left center / 20px 100% no-repeat,
-    radial-gradient(farthest-side at 100% 50%, rgba(227, 73, 72, 0.25), rgba(0,0,0,0)) right center / 20px 100% no-repeat;
-  background-attachment: local, local, scroll, scroll;
+  scrollbar-color: var(--gray-600) var(--gray-800);
+  background: var(--bg-card);
 }
 
 .table-scroll::-webkit-scrollbar { height: 12px; }
@@ -748,12 +725,12 @@ input, select, textarea {
   border-radius: 6px;
 }
 .table-scroll::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg, var(--red), var(--red-dark));
+  background: var(--gray-600);
   border-radius: 6px;
   border: 2px solid var(--gray-700);
 }
 .table-scroll::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(90deg, var(--red-dark), var(--red));
+  background: var(--gray-500);
 }
 
 table {
@@ -773,22 +750,12 @@ thead {
   background: var(--bg-card);
 }
 
-thead::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--red) 50%, transparent 100%);
-}
-
 th {
   text-align: left;
   padding: var(--s-2) var(--s-2);
   font-size: 10px;
   font-weight: var(--fw-bold);
-  color: var(--red);
+  color: var(--txt-muted);
   text-transform: uppercase;
   letter-spacing: 0.3px;
   border-bottom: 2px solid var(--border);
@@ -816,16 +783,16 @@ th {
 
 .col-resize:hover,
 .col-resize--active {
-  background: var(--red);
+  background: var(--gray-500);
 }
 
 th:hover {
-  color: var(--red-dark);
+  color: var(--txt-primary);
   background: var(--bg-row-hover);
 }
 
-th[aria-sort="ascending"]::after { content: ' \25B2'; color: var(--red); }
-th[aria-sort="descending"]::after { content: ' \25BC'; color: var(--red); }
+th[aria-sort="ascending"]::after { content: ' \25B2'; color: var(--txt-primary); }
+th[aria-sort="descending"]::after { content: ' \25BC'; color: var(--txt-primary); }
 
 td {
   padding: var(--s-2) var(--s-2);
@@ -869,7 +836,7 @@ td.numeric {
 /* === Tags, Checkbox === */
 .tag-stack { display: inline-flex; align-items: center; gap: 3px; flex-wrap: nowrap; max-width: 220px; overflow: hidden; }
 .tag-plus { background: var(--gray-600); color: var(--txt-secondary); padding: 1px 5px; border-radius: var(--r-pill); font-size: 10px; font-weight: var(--fw-semibold); }
-input[type="checkbox"].row-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--red); vertical-align: middle; }
+input[type="checkbox"].row-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--green); vertical-align: middle; }
 th.check-col, td.check-col { width: 36px; text-align: center; padding: var(--s-2); }
 
 /* Sticky coluna Cliente (segunda, apos remocao do checkbox) */
@@ -887,7 +854,7 @@ th.check-col, td.check-col { width: 36px; text-align: center; padding: var(--s-2
 
 tbody tr:hover td:nth-child(2) {
   background: var(--bg-row-hover);
-  color: var(--red);
+  color: var(--txt-primary);
 }
 
 /* Compacta quando poucas colunas (modo recolhido) */
@@ -935,7 +902,7 @@ tbody tr:hover td:nth-child(2) {
   background: transparent;
   font-weight: var(--fw-semibold);
   font-size: var(--fs-md);
-  color: var(--red);
+  color: var(--txt-primary);
   grid-column: 1 / -1;
   border-bottom: 1px solid var(--border);
   padding-bottom: var(--s-2);
@@ -962,8 +929,8 @@ td .pill {
 .pill--danger     { background: var(--status-danger);     color: var(--white); }
 .pill--amarelo    { background: var(--status-amarelo);    color: var(--black); }
 .pill--verde      { background: var(--status-verde);      color: var(--txt-on-red); }
-.pill--neutro     { background: var(--gray-500);          color: var(--txt-primary); }
-.pill--preenchido { background: var(--gray-600);          color: var(--txt-primary); }
+.pill--neutro     { background: var(--status-neutro);     color: var(--white); }
+.pill--preenchido { background: var(--status-preenchido); color: var(--black); }
 
 .pill--small  { background: var(--gray-700); color: var(--txt-secondary); }
 .pill--tier-SMALL  { background: var(--gray-600); color: var(--white); }
@@ -1062,6 +1029,10 @@ td .pill {
   to   { transform: translateY(0); opacity: 1; }
 }
 
+.modal--wide {
+  max-width: 1100px;
+}
+
 .modal__header {
   display: flex;
   align-items: center;
@@ -1102,6 +1073,17 @@ td .pill {
   border-top: 1px solid var(--border);
 }
 
+/* ─── Confirm dialog ─── */
+.confirm-dialog p {
+  font-size: var(--fs-md);
+}
+
+.confirm-dialog__hint {
+  margin-top: var(--s-2);
+  color: var(--txt-muted);
+  font-size: var(--fs-sm);
+}
+
 /* ─── Column picker (modal) ─── */
 .cols-grid {
   display: grid;
@@ -1134,7 +1116,7 @@ td .pill {
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: var(--red);
+  accent-color: var(--green);
 }
 
 .cols-item--locked {
@@ -1183,7 +1165,7 @@ td .pill {
 .detail-section__title {
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
-  color: var(--red);
+  color: var(--txt-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: var(--s-3);
@@ -1217,12 +1199,12 @@ td .pill {
 }
 
 .detail-list dd a {
-  color: var(--red);
+  color: var(--green);
   text-decoration: underline;
 }
 
 .detail-list dd a:hover {
-  color: var(--red-dark);
+  color: var(--green-dark);
 }
 
 .detail-fields {
@@ -1270,8 +1252,8 @@ textarea.detail-input {
 
 .detail-input:focus {
   outline: none;
-  border-color: var(--red);
-  box-shadow: 0 0 0 2px rgba(227, 73, 72, 0.15);
+  border-color: var(--border-light);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.10);
 }
 
 .detail-field:has(.detail-field__label:contains('Just')) ,
@@ -1334,6 +1316,7 @@ textarea.detail-input {
 .form__textarea:focus {
   outline: none;
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.10);
 }
 
 .form__btn {
@@ -1346,11 +1329,18 @@ textarea.detail-input {
 }
 
 .form__btn--primary {
+  background: var(--green);
+  color: var(--white);
+}
+
+.form__btn--primary:hover { background: var(--green-dark); }
+
+.form__btn--danger {
   background: var(--red);
   color: var(--txt-on-red);
 }
 
-.form__btn--primary:hover { background: var(--red-dark); }
+.form__btn--danger:hover { background: var(--red-dark); }
 
 .form__btn--secondary {
   background: var(--gray-700);
@@ -1375,7 +1365,7 @@ textarea.detail-input {
 .toast {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-left: 4px solid var(--squad-wall-street);
+  border-left: 4px solid var(--gray-500);
   border-radius: var(--r-md);
   padding: var(--s-3) var(--s-4);
   box-shadow: var(--shadow-md);
@@ -1414,7 +1404,7 @@ textarea.detail-input {
   width: 40px;
   height: 40px;
   border: 3px solid var(--gray-700);
-  border-top-color: var(--red);
+  border-top-color: var(--gray-400);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

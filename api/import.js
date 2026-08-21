@@ -118,11 +118,23 @@ const BOOL_COLS = new Set(['entregas_prazo', 'entregas_qualidade', 'relacionamen
 // Nomes canonicos: variacoes da mesma pessoa -> nome unico.
 const NAME_ALIASES = {
   'giullio cesar da silva barbosa': 'Giullio Barbosa',
+  'matheus eduardo da silva diogo': 'Matheus Eduardo',
+  'matheus eduardo': 'Matheus Eduardo',
+  'felipe porto': 'Felipe Porto',
+  'guilherme': 'Guilherme Santana',
+  'bruna ferreira': 'Bruna Ferreira Alves',
 };
 
-function normalizePersonName(s) {
+// Aliases que dependem do campo: mesmo nome curto, pessoas diferentes.
+const FIELD_ALIASES = {
+  account: { 'leonardo': 'Leonardo Volponi' },
+  gt: { 'leonardo': 'Leonardo Rafael Villas Boas' },
+};
+
+function normalizePersonName(s, field) {
   if (!s) return s;
   const key = String(s).toLowerCase().trim().replace(/\s+/g, ' ');
+  if (field && FIELD_ALIASES[field] && FIELD_ALIASES[field][key]) return FIELD_ALIASES[field][key];
   return NAME_ALIASES[key] || s;
 }
 
@@ -227,6 +239,28 @@ function fetchUrl(url) {
   });
 }
 
+function supabaseDelete(table, query) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(`${SUPABASE_URL}/rest/v1/${table}?${query}`);
+    const proto = SUPABASE_URL.startsWith('https') ? https : http;
+    const req = proto.request(url, {
+      method: 'DELETE',
+      headers: {
+        apikey: SERVICE_KEY,
+        Authorization: `Bearer ${SERVICE_KEY}`,
+      },
+      timeout: 30000,
+    }, (res) => {
+      res.resume();
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) resolve();
+        else reject(new Error(`Supabase ${res.statusCode}`));
+      });
+    }).on('error', reject);
+    req.end();
+  });
+}
+
 function supabaseUpsert(table, rows, onConflict) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(rows);
@@ -281,7 +315,7 @@ function rowToPayload(row, squadId, warnings) {
     } else if (DATE_COLS.has(target)) {
       payload[target] = parseDateBr(v);
     } else if (target === 'coordenador' || target === 'account' || target === 'gt') {
-      payload[target] = normalizePersonName(v);
+      payload[target] = normalizePersonName(v, target);
     } else {
       payload[target] = v;
     }
@@ -430,6 +464,19 @@ module.exports = async (req, res) => {
         totalErr += rows.length;
         log.push(`  ERRO: ${e.message}`);
         log.push(`  Primeira linha problematic: ${JSON.stringify(normalized[0]).slice(0, 500)}`);
+      }
+
+      // Mirror delete: remove clientes que sairam da planilha ou foram renomeados.
+      try {
+        const fetchedNames = new Set(rows.map(r => r.nome));
+        const existing = await supabaseGet(`/clientes?select=id,nome&squad_id=eq.${squadId}`);
+        const stale = existing.filter(r => !fetchedNames.has(r.nome)).map(r => r.id);
+        if (stale.length) {
+          await supabaseDelete('clientes', `id=in.(${stale.join(',')})`);
+          log.push(`  Removidos ${stale.length} clientes fora da planilha`);
+        }
+      } catch (e) {
+        warnings.push(`${squadId}: mirror delete falhou: ${e.message}`);
       }
     }
 

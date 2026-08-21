@@ -4,12 +4,13 @@ Servidor local de API para desenvolvimento (XAMPP nao executa serverless).
 Expoe os mesmos endpoints da Vercel:
     POST /sync_tratativas
     POST /move_tratativa   { "card_id": "...", "to_etapa": "..." }
+    POST /import           (busca planilhas e reimporta clientes)
 
 Uso (deixe rodando em um terminal enquanto testa):
     python scripts\\local_api.py
 
-O front (tratativas.js) detecta a ausencia do endpoint no Apache e usa
-este servidor automaticamente via http://127.0.0.1:5099.
+O front detecta a ausencia dos endpoints no Apache e usa este servidor
+automaticamente via http://127.0.0.1:5099.
 """
 import json
 import re
@@ -30,6 +31,18 @@ for _line in (BASE / '.env').read_text(encoding='utf-8').splitlines():
 import sync_tratativas as st  # noqa: E402
 
 HOST, PORT = '127.0.0.1', 5099
+
+
+def run_import():
+    """Equivalente local do api/import.js: planilhas -> CSV -> Supabase."""
+    import fetch_sheets as fs
+    import import_clientes as ic
+    rows = fs.fetch_all()
+    if not rows:
+        return {'ok': False, 'error': 'Nenhuma linha encontrada nas planilhas'}
+    fs.save_csv(rows)
+    ic.import_clientes(fs.CSV_OUT)
+    return {'ok': True, 'total': len(rows)}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -73,6 +86,10 @@ class Handler(BaseHTTPRequestHandler):
                 result = st.move_tratativa(card_id, to_etapa)
                 return self._send(200, {'ok': True, **result})
 
+            if self.path.startswith('/import'):
+                result = run_import()
+                return self._send(200 if result.get('ok') else 500, result)
+
             self._send(404, {'ok': False, 'error': 'Endpoint inexistente'})
         except Exception as e:
             print(f'[ERRO] {self.path}: {e}')
@@ -83,8 +100,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    print(f'API local de tratativas em http://{HOST}:{PORT}')
-    print('Endpoints: POST /sync_tratativas | POST /move_tratativa | GET /health')
+    print(f'API local em http://{HOST}:{PORT}')
+    print('Endpoints: POST /sync_tratativas | POST /move_tratativa | POST /import | GET /health')
     try:
         ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
     except KeyboardInterrupt:

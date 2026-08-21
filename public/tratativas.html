@@ -7,10 +7,6 @@
   <meta name="description" content="Espelho do pipe de Tratativas (Pipefy): kanban por etapa, historico e relatorios." />
   <link rel="icon" type="image/svg+xml" href="assets/mktlab-logo.svg" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
-
   <link rel="stylesheet" href="css/tokens.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/login.css" />
@@ -69,7 +65,7 @@
     .kanban__col-body { padding: var(--s-2); overflow-y: auto; display: flex; flex-direction: column; gap: var(--s-2); }
     .kan-card {
       background: var(--bg-input); border: 1px solid var(--border);
-      border-left: 3px solid var(--kpi-line, var(--red));
+      border-left: 3px solid var(--kpi-line, var(--gray-500));
       border-radius: var(--r-md); padding: var(--s-3); cursor: pointer;
       transition: border-color var(--t-fast), transform var(--t-fast);
     }
@@ -78,8 +74,8 @@
     .kan-card:active { cursor: grabbing; }
     .kan-card.dragging { opacity: .45; }
     .kanban__col-body.drag-over {
-      outline: 2px dashed var(--red); outline-offset: -4px;
-      background: rgba(227,73,72,.06); border-radius: var(--r-md);
+      outline: 2px dashed var(--green); outline-offset: -4px;
+      background: rgba(27,175,122,.06); border-radius: var(--r-md);
     }
     .kan-card__title { font-size: var(--fs-sm); font-weight: var(--fw-semibold); margin-bottom: 4px; }
     .kan-card__client { font-size: var(--fs-xs); color: var(--txt-secondary); margin-bottom: 4px; }
@@ -114,7 +110,7 @@
     .trat-table th {
       position: sticky; top: 0; z-index: 3; text-align: left;
       padding: var(--s-3) var(--s-4); font-size: 12px; font-weight: var(--fw-bold);
-      color: var(--red); text-transform: uppercase; letter-spacing: 0.4px;
+      color: var(--txt-muted); text-transform: uppercase; letter-spacing: 0.4px;
       border-bottom: 2px solid var(--border); white-space: nowrap; background: var(--bg-card);
     }
     .trat-table td {
@@ -161,7 +157,7 @@
     .hist-item:last-child { border-bottom: none; }
     .hist-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-500); flex-shrink: 0; }
     .hist-dot--done { background: var(--green); }
-    .hist-dot--current { background: var(--red); box-shadow: 0 0 0 3px rgba(227,73,72,.2); }
+    .hist-dot--current { background: var(--txt-primary); box-shadow: 0 0 0 3px rgba(255,255,255,.25); }
     .hist-main { flex: 1; }
     .hist-etapa { font-weight: var(--fw-semibold); font-size: var(--fs-sm); }
     .hist-dates { font-size: var(--fs-xs); color: var(--txt-muted); font-family: var(--font-mono); }

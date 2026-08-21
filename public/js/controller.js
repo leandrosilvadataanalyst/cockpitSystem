@@ -6,7 +6,7 @@ import { state, loadUser, loadAll, applyFilters, setFilter, clearFilters, setSor
 console.log('[controller.js] model.js OK')
 import { DB } from './supabase.js'
 console.log('[controller.js] supabase.js OK')
-import { render, showModal, hideModal, showToast, showLoader, exportTableData, showClientDetailModal, showColumnsModal, loadColumnWidths } from './view.js'
+import { render, showModal, hideModal, showToast, showLoader, exportTableData, showClientDetailModal, showColumnsModal, loadColumnWidths, confirmDialog } from './view.js'
 console.log('[controller.js] view.js OK')
 
 const $ = (sel) => document.querySelector(sel)
@@ -215,6 +215,32 @@ function updateCollapseBtn(collapsed) {
 }
 
 // -- Importacao via planilhas --
+// Mesmo padrao de tratativas.js: tenta o endpoint relativo (Vercel) e,
+// sob o XAMPP (404/HTML), cai para o servidor local de dev.
+const LOCAL_API = 'http://127.0.0.1:5099'
+
+async function apiPost(path, body) {
+  try {
+    const resp = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const ct = resp.headers.get('content-type') || ''
+    if (resp.status === 404 || !ct.includes('json')) throw { fallback: true }
+    return await resp.json().catch(() => ({ ok: false, error: 'Resposta invalida da API' }))
+  } catch (e) {
+    if (!e || !e.fallback) console.warn('Fallback para API local:', e)
+  }
+  const endpoint = path.split('/').pop()
+  const resp = await fetch(`${LOCAL_API}/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  return resp.json()
+}
+
 async function triggerImportFromSheets() {
   const btn = $('#btn-import-sheets')
   if (btn) {
@@ -222,8 +248,7 @@ async function triggerImportFromSheets() {
     btn.textContent = 'Importando...'
   }
   try {
-    const resp = await fetch('api/import')
-    const data = await resp.json()
+    const data = await apiPost('api/import', {})
     if (data.ok) {
       showToast('Importacao concluida! Recarregando...', 'success', 4000)
       await loadAll()
@@ -235,7 +260,7 @@ async function triggerImportFromSheets() {
       console.error('Import error:', data)
     }
   } catch (err) {
-    showToast('Erro ao conectar: ' + err.message, 'error')
+    showToast('Erro ao conectar: ' + err.message + '. Dica local: rode "python scripts\\local_api.py"', 'error')
   } finally {
     if (btn) {
       btn.disabled = false
@@ -277,7 +302,12 @@ function bindTableActions() {
         const cliente = state.clientes.find(c => c.id === id)
         if (cliente) openEditModal(cliente)
       } else if (btn.dataset.action === 'delete') {
-        if (confirm('Excluir este cliente? Esta acao nao pode ser desfeita.')) {
+        const ok = await confirmDialog('Excluir este cliente?', {
+          title: 'Excluir cliente',
+          okLabel: 'Excluir',
+          hint: 'Esta acao nao pode ser desfeita.'
+        })
+        if (ok) {
           try {
             await DB.deleteCliente(id)
             state.clientes = state.clientes.filter(c => c.id !== id)
